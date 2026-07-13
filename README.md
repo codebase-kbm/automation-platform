@@ -1,31 +1,83 @@
 # Automation Platform
 
-A protocol-agnostic automation middleware that unifies heterogeneous building and industrial systems into a single Signal-based architecture.
+A protocol-agnostic automation middleware that unifies heterogeneous building and industrial automation systems through a common Event-driven Signal Model.
 
-The Automation Platform decouples hardware, protocols, and applications by introducing a central Signal Model and an event-driven core.
+The Automation Platform decouples hardware, protocols, transports and applications by introducing a lightweight Automation Core with a unified event model.
+
+---
+
+## Vision
+
+Automation Platform is **not** another PLC, SCADA system or home automation platform.
+
+Instead, it provides a common communication layer that allows independent systems to exchange information through a unified event model.
+
+The Core connects systems — it does not replace them.
 
 ---
 
 ## 🚀 Concept
 
-Instead of integrating systems directly:
+Instead of creating direct integrations
 
 CAN ↔ MQTT ↔ Crestron ↔ Modbus ↔ Home Assistant
 
-everything is normalized into a unified abstraction:
+every protocol is translated into a common representation.
 
-**Signal → Core → Adapter**
+```
+Signal Definition
+        │
+        ▼
+     Signal Event
+        │
+        ▼
+ Automation Core
+        │
+        ▼
+     Adapters
+```
 
-The core does not know any protocol details.  
-It only processes signals and routes events between adapters.
+The Core never knows protocol details.
+
+Protocols only exist inside adapters.
 
 ---
 
-## 🧠 Core Principles
+## Features
 
-- Everything is a Signal
-- No protocol knowledge inside the core
-- Fully event-driven architecture
-- Loose coupling via Adapters
-- Configuration-driven mappings (no hardcoding)
-- Platform independent (Linux, ESP32, etc.)
+- Event-driven architecture
+- Protocol independent
+- Platform independent (Linux, ESP32, ...)
+- Distributed by design
+- Configuration-driven mappings
+- Timestamp support
+- Signal timeout supervision
+- Extensible adapter architecture
+
+---
+
+## Planned Adapters
+
+### Communication
+
+- MQTT
+- CAN / SocketCAN
+- Modbus
+- OpenTherm
+- DMX / Art-Net
+- Crestron ISC (optional)
+
+### Service
+
+- Syslog
+- Loki
+- InfluxDB
+- Prometheus
+
+---
+
+## Project Status
+
+Early development.
+
+The current focus is building a lightweight, reusable Automation Core.
