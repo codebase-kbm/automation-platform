@@ -81,3 +81,15 @@ Protocols only exist inside adapters.
 Early development.
 
 The current focus is building a lightweight, reusable Automation Core.
+
+## Current Status
+
+The minimal Automation Core is operational.
+
+Implemented components:
+
+- Signal model
+- Event model
+- Event dispatcher
+- Logger adapter
+- Minimal example application
