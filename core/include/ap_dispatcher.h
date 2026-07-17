@@ -1,6 +1,7 @@
 #ifndef AP_DISPATCHER_H
 #define AP_DISPATCHER_H
 
+#include "ap_common.h"
 #include "ap_event.h"
 
 #ifdef __cplusplus

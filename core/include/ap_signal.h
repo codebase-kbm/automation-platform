@@ -1,7 +1,7 @@
 #ifndef AP_SIGNAL_H
 #define AP_SIGNAL_H
 
-#include <stdint.h>
+#include "ap_common.h"
 
 #ifdef __cplusplus
 extern "C" {

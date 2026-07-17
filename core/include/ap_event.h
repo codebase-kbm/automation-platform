@@ -1,9 +1,7 @@
 #ifndef AP_EVENT_H
 #define AP_EVENT_H
 
-#include <stdint.h>
-#include <stdbool.h>
-
+#include "ap_common.h"
 #include "ap_signal.h"
 
 #ifdef __cplusplus
