@@ -1,9 +1,10 @@
-#include <stdio.h>
-#include "ap_core.h"
 #include "ap_dispatcher.h"
+#include <stdio.h>
+
+#include "ap_core.h"
 #include "ap_event.h"
+#include "ap_mapper.h"
 #include "ap_registry.h"
-#include "ap_signal.h"
 
 #include "logger.h"
 
@@ -13,90 +14,99 @@ int main(void)
     printf(" Automation Platform - Minimal Example\n");
     printf("=========================================\n\n");
 
-    printf("Initializing Core...\n");
-    ap_core_init();
+    /* ---------------------------------------------------------- */
+    /* Initialize Core                                             */
+    /* ---------------------------------------------------------- */
 
-    printf("Initializing Logger...\n");
+    ap_core_init();
     ap_logger_init();
 
-    printf("\nRegistering signals...\n");
+    printf("Core initialized.\n\n");
 
-    static const ap_signal_t temperature =
-    {
-        .id = 100,
-        .type = AP_SIGNAL_FLOAT
-    };
+    /* ---------------------------------------------------------- */
+    /* Define Signals                                              */
+    /* ---------------------------------------------------------- */
 
-    static const ap_signal_t humidity =
-    {
-        .id = 101,
-        .type = AP_SIGNAL_INT32
-    };
+static const ap_signal_t source_temperature =
+{
+    .id = 100,
+    .type = AP_SIGNAL_FLOAT
+};
 
-    static const ap_signal_t alarm =
-    {
-        .id = 102,
-        .type = AP_SIGNAL_BOOL
-    };
+static const ap_signal_t target_temperature_1 =
+{
+    .id = 200,
+    .type = AP_SIGNAL_FLOAT
+};
 
-    static const ap_signal_t status =
-    {
-        .id = 103,
-        .type = AP_SIGNAL_STRING
-    };
+static const ap_signal_t target_temperature_2 =
+{
+    .id = 201,
+    .type = AP_SIGNAL_FLOAT
+};
 
-    printf("Temperature : %s\n",
-           ap_registry_register(&temperature) ? "OK" : "FAILED");
+static const ap_signal_t target_temperature_3 =
+{
+    .id = 202,
+    .type = AP_SIGNAL_FLOAT
+};
 
-    printf("Humidity    : %s\n",
-           ap_registry_register(&humidity) ? "OK" : "FAILED");
+    /* ---------------------------------------------------------- */
+    /* Register Signals                                            */
+    /* ---------------------------------------------------------- */
 
-    printf("Alarm       : %s\n",
-           ap_registry_register(&alarm) ? "OK" : "FAILED");
+    ap_registry_register(&source_temperature);
+    ap_registry_register(&target_temperature_1);
+    ap_registry_register(&target_temperature_2);
+    ap_registry_register(&target_temperature_3);
 
-    printf("Status      : %s\n",
-           ap_registry_register(&status) ? "OK" : "FAILED");
+    printf("Signals registered.\n");
 
-    printf("\nDuplicate registration test...\n");
+    /* ---------------------------------------------------------- */
+    /* Configure Mapping                                            */
+    /* ---------------------------------------------------------- */
 
-    if (!ap_registry_register(&temperature))
-        printf("Duplicate detection: OK\n");
-    else
-        printf("Duplicate detection: FAILED\n");
+    ap_mapper_add(100, 200);
+    ap_mapper_add(100, 201);
+    ap_mapper_add(100, 202);
 
-    printf("\nUnknown signal test...\n");
+    printf("Mappings registered.\n\n");
 
-    if (ap_registry_find(999) == NULL)
-        printf("Unknown signal lookup: OK\n");
-    else
-        printf("Unknown signal lookup: FAILED\n");
-
-    printf("\nPublishing events...\n\n");
+    /* ---------------------------------------------------------- */
+    /* Create Event                                                */
+    /* ---------------------------------------------------------- */
 
     ap_event_t event;
 
-    event.timestamp = 123456789;
-    event.source = 1;
-    event.flags = AP_EVENT_NONE;
+    ap_event_init(
+        &event,
+        &source_temperature,
+        1);
 
-    event.signal = &temperature;
     event.value.f = 21.5f;
-    ap_dispatcher_publish(&event);
 
-    event.timestamp++;
-    event.signal = &humidity;
-    event.value.i = 56;
-    ap_dispatcher_publish(&event);
+    /* ---------------------------------------------------------- */
+    /* Process Mapping                                             */
+    /* ---------------------------------------------------------- */
 
-    event.timestamp++;
-    event.signal = &alarm;
-    event.value.b = true;
-    ap_dispatcher_publish(&event);
+    ap_event_t mapped[8];
 
-    event.timestamp++;
-    event.signal = &status;
-    event.value.s = "Running";
-    ap_dispatcher_publish(&event);
+    uint32_t count =
+        ap_mapper_process(
+            &event,
+            mapped,
+            8);
+
+    printf("Mapped Events: %u\n\n", count);
+
+    /* ---------------------------------------------------------- */
+    /* Publish                                                     */
+    /* ---------------------------------------------------------- */
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        ap_dispatcher_publish(&mapped[i]);
+    }
 
     printf("\nDone.\n");
 

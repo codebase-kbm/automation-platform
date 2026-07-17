@@ -55,6 +55,10 @@ typedef struct
 
 } ap_event_t;
 
+void ap_event_init(ap_event_t *event,
+                   const ap_signal_t *signal,
+                   uint16_t source);
+				   
 #ifdef __cplusplus
 }
 #endif
