@@ -3,6 +3,7 @@
 
 #include "ap_common.h"
 #include "ap_event.h"
+#include "ap_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +20,7 @@ typedef struct
 void ap_mapper_init(void);
 
 /* Add mapping rule */
-bool ap_mapper_add(uint32_t source,
+ap_result_t ap_mapper_add(uint32_t source,
                    uint32_t destination);
 
 /* Process one event */

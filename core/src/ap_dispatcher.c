@@ -14,14 +14,14 @@ void ap_dispatcher_init(void)
 bool ap_dispatcher_register(ap_event_handler_t handler)
 {
     if (handler == NULL)
-        return false;
+        return AP_ERROR_INVALID_ARGUMENT;
 
     if (handler_count >= AP_MAX_EVENT_HANDLERS)
-        return false;
+        return AP_ERROR_FULL;
 
     handlers[handler_count++] = handler;
 
-    return true;
+    return AP_OK;
 }
 
 void ap_dispatcher_publish(const ap_event_t *event)

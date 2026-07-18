@@ -3,6 +3,7 @@
 
 #include "ap_common.h"
 #include "ap_event.h"
+#include "ap_result.h"
 
 #ifdef __cplusplus
 extern "C" {

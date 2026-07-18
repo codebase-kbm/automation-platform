@@ -12,18 +12,18 @@ void ap_mapper_init(void)
     mapping_count = 0;
 }
 
-bool ap_mapper_add(uint32_t source,
+ap_result_t ap_mapper_add(uint32_t source,
                    uint32_t destination)
 {
     if (mapping_count >= AP_MAX_MAPPINGS)
-        return false;
+        return AP_ERROR_FULL;
 
     mappings[mapping_count].source = source;
     mappings[mapping_count].destination = destination;
 
     mapping_count++;
 
-    return true;
+    return AP_OK;
 }
 
 uint32_t ap_mapper_process(const ap_event_t *input,

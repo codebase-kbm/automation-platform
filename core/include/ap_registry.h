@@ -3,6 +3,7 @@
 
 #include "ap_common.h"
 #include "ap_signal.h"
+#include "ap_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,7 +11,7 @@ extern "C" {
 
 void ap_registry_init(void);
 
-bool ap_registry_register(const ap_signal_t *signal);
+ap_result_t ap_registry_register(const ap_signal_t *signal);
 
 const ap_signal_t *ap_registry_find(uint32_t id);
 
