@@ -1,15 +1,19 @@
 #include "ap_mapper.h"
-
+#include "ap_dispatcher.h"
 #include "ap_registry.h"
 
 #define AP_MAX_MAPPINGS 256
 
 static ap_mapping_t mappings[AP_MAX_MAPPINGS];
 static uint32_t mapping_count;
+static void ap_mapper_event_handler(const ap_event_t *event);
 
 void ap_mapper_init(void)
 {
     mapping_count = 0;
+	    ap_dispatcher_register(
+        ap_mapper_event_handler
+    );
 }
 
 ap_result_t ap_mapper_add(uint32_t source,
@@ -59,4 +63,24 @@ uint32_t ap_mapper_process(const ap_event_t *input,
     }
 
     return count;
+}
+
+static void ap_mapper_event_handler(const ap_event_t *event)
+{
+    if (event == NULL)
+        return;
+
+    ap_event_t outputs[AP_MAX_MAPPINGS];
+
+    uint32_t count =
+        ap_mapper_process(
+            event,
+            outputs,
+            AP_MAX_MAPPINGS
+        );
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        ap_dispatcher_publish(&outputs[i]);
+    }
 }

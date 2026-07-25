@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "ap_core.h"
 #include "ap_dispatcher.h"
@@ -7,6 +9,8 @@
 #include "ap_registry.h"
 
 #include "logger.h"
+#include "mqtt.h"
+
 
 int main(void)
 {
@@ -14,171 +18,163 @@ int main(void)
     printf(" Automation Platform - Core Test\n");
     printf("=========================================\n\n");
 
-    /* ---------------------------------------------------------- */
-    /* Initialize                                                  */
-    /* ---------------------------------------------------------- */
-
-    ap_core_init();
-    ap_logger_init();
+    /*
+     * Core initialization
+     */
+    if (ap_core_init() != AP_OK)
+    {
+        printf("Core initialization failed.\n");
+        return 1;
+    }
+	ap_logger_init();
 
     printf("Core initialized.\n\n");
 
-    /* ---------------------------------------------------------- */
-    /* Signal Definitions                                          */
-    /* ---------------------------------------------------------- */
 
-    static const ap_signal_t sig_bool =
-    {
-        .id   = 100,
-        .type = AP_SIGNAL_BOOL
-    };
+ap_mqtt_config_t mqtt_config =
+{
+    .host = "127.0.0.1",
+    .port = 1883,
+    .username = "automation",
+    .password = "password"
+};
 
-    static const ap_signal_t sig_int =
-    {
-        .id   = 101,
-        .type = AP_SIGNAL_INT32
-    };
+ap_result_t mqtt_result =
+    ap_mqtt_init(&mqtt_config);
 
-    static const ap_signal_t sig_float =
+if (mqtt_result != AP_OK)
+{
+    printf(
+        "MQTT initialization failed: %s\n",
+        ap_result_string(mqtt_result)
+    );
+
+    return 1;
+}
+
+
+printf("MQTT connected.\n");
+
+ap_mqtt_subscribe(
+    "automation/signal/#"
+);
+
+    /*
+     * Signals
+     */
+
+	ap_event_t event;
+	
+    ap_signal_t temperature =
     {
-        .id   = 102,
+        .id = 100,
         .type = AP_SIGNAL_FLOAT
     };
 
-    static const ap_signal_t sig_string =
+    ap_signal_t temperature_display =
     {
-        .id   = 103,
-        .type = AP_SIGNAL_STRING
+        .id = 200,
+        .type = AP_SIGNAL_FLOAT
     };
 
-    /* BOOL targets */
+    ap_signal_t temperature_log =
+    {
+        .id = 201,
+        .type = AP_SIGNAL_FLOAT
+    };
 
-    static const ap_signal_t bool_out1 = { .id = 200, .type = AP_SIGNAL_BOOL };
-    static const ap_signal_t bool_out2 = { .id = 201, .type = AP_SIGNAL_BOOL };
-
-    /* INT targets */
-
-    static const ap_signal_t int_out1 = { .id = 210, .type = AP_SIGNAL_INT32 };
-    static const ap_signal_t int_out2 = { .id = 211, .type = AP_SIGNAL_INT32 };
-
-    /* FLOAT targets */
-
-    static const ap_signal_t float_out1 = { .id = 220, .type = AP_SIGNAL_FLOAT };
-    static const ap_signal_t float_out2 = { .id = 221, .type = AP_SIGNAL_FLOAT };
-    static const ap_signal_t float_out3 = { .id = 222, .type = AP_SIGNAL_FLOAT };
-
-    /* STRING targets */
-
-    static const ap_signal_t string_out1 = { .id = 230, .type = AP_SIGNAL_STRING };
-    static const ap_signal_t string_out2 = { .id = 231, .type = AP_SIGNAL_STRING };
-
-    /* ---------------------------------------------------------- */
-    /* Registry                                                    */
-    /* ---------------------------------------------------------- */
-
-    ap_registry_register(&sig_bool);
-    ap_registry_register(&sig_int);
-    ap_registry_register(&sig_float);
-    ap_registry_register(&sig_string);
-
-    ap_registry_register(&bool_out1);
-    ap_registry_register(&bool_out2);
-
-    ap_registry_register(&int_out1);
-    ap_registry_register(&int_out2);
-
-    ap_registry_register(&float_out1);
-    ap_registry_register(&float_out2);
-    ap_registry_register(&float_out3);
-
-    ap_registry_register(&string_out1);
-    ap_registry_register(&string_out2);
+    if (ap_registry_register(&temperature) != AP_OK ||
+        ap_registry_register(&temperature_display) != AP_OK ||
+        ap_registry_register(&temperature_log) != AP_OK)
+    {
+        printf("Signal registration failed.\n");
+        return 1;
+    }
 
     printf("Signals registered.\n");
 
-    /* ---------------------------------------------------------- */
-    /* Mapping                                                     */
-    /* ---------------------------------------------------------- */
+    /*
+     * Mappings
+     */
 
-    ap_mapper_add(100, 200);
-    ap_mapper_add(100, 201);
-
-    ap_mapper_add(101, 210);
-    ap_mapper_add(101, 211);
-
-    ap_mapper_add(102, 220);
-    ap_mapper_add(102, 221);
-    ap_mapper_add(102, 222);
-
-    ap_mapper_add(103, 230);
-    ap_mapper_add(103, 231);
+    if (ap_mapper_add(100, 200) != AP_OK ||
+        ap_mapper_add(100, 201) != AP_OK)
+    {
+        printf("Mapping registration failed.\n");
+        return 1;
+    }
 
     printf("Mappings registered.\n\n");
 
-    /* ---------------------------------------------------------- */
-    /* Helper Buffer                                               */
-    /* ---------------------------------------------------------- */
+printf("Publishing event...\n");
 
-    ap_event_t event;
-    ap_event_t mapped[8];
+ap_event_init(&event,
+              &temperature,
+              100);
 
-    uint32_t count;
+event.value.f = 21.5f;
+ap_dispatcher_publish(&event);
 
-    /* ---------------------------------------------------------- */
-    /* BOOL                                                        */
-    /* ---------------------------------------------------------- */
+struct timespec delay =
+{
+    .tv_sec = 0,
+    .tv_nsec = 100000000
+};
 
-    printf("=== BOOL TEST ===\n");
+nanosleep(&delay, NULL);
 
-    ap_event_init(&event, &sig_bool, 1);
-    event.value.b = true;
+const ap_signal_t *signal =
+    ap_registry_find(100);
 
-    count = ap_mapper_process(&event, mapped, 8);
+if (signal == NULL)
+{
+    printf("Signal not found\n");
+    return 0;
+}
 
-    for (uint32_t i = 0; i < count; i++)
-        ap_dispatcher_publish(&mapped[i]);
+ap_event_init(
+    &event,
+    signal,
+    0
+);
 
-    /* ---------------------------------------------------------- */
-    /* INT32                                                       */
-    /* ---------------------------------------------------------- */
+event.value.f = 21.8f;
 
-    printf("\n=== INT32 TEST ===\n");
+ap_mqtt_publish_event(
+    &event
+);
 
-    ap_event_init(&event, &sig_int, 1);
-    event.value.i = 4711;
+while (1)
+{
+    ap_result_t result =
+        ap_core_process();
 
-    count = ap_mapper_process(&event, mapped, 8);
+    if (result != AP_OK)
+    {
+        printf(
+            "Core process failed: %s\n",
+            ap_result_string(result)
+        );
 
-    for (uint32_t i = 0; i < count; i++)
-        ap_dispatcher_publish(&mapped[i]);
+        break;
+    }
+	
+	ap_mqtt_process();
 
-    /* ---------------------------------------------------------- */
-    /* FLOAT                                                       */
-    /* ---------------------------------------------------------- */
+    struct timespec delay =
+    {
+        .tv_sec = 0,
+        .tv_nsec = 100000000
+    };
 
-    printf("\n=== FLOAT TEST ===\n");
+    nanosleep(&delay, NULL);
+}
 
-    ap_event_init(&event, &sig_float, 1);
-    event.value.f = 21.5f;
+    /*
+     * Shutdown
+     */
 
-    count = ap_mapper_process(&event, mapped, 8);
-
-    for (uint32_t i = 0; i < count; i++)
-        ap_dispatcher_publish(&mapped[i]);
-
-    /* ---------------------------------------------------------- */
-    /* STRING                                                      */
-    /* ---------------------------------------------------------- */
-
-    printf("\n=== STRING TEST ===\n");
-
-    ap_event_init(&event, &sig_string, 1);
-    event.value.s = "Automation Platform";
-
-    count = ap_mapper_process(&event, mapped, 8);
-
-    for (uint32_t i = 0; i < count; i++)
-        ap_dispatcher_publish(&mapped[i]);
+    ap_core_shutdown();
 
     printf("\nDone.\n");
 

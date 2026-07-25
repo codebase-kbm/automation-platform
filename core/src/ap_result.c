@@ -37,6 +37,18 @@ const char *ap_result_string(ap_result_t result)
         case AP_ERROR_NOT_SUPPORTED:
             return "Not supported";
 
+        case AP_ERROR_INIT_FAILED:
+            return "Initialization failed";
+
+        case AP_ERROR_CONNECTION:
+            return "Connection failed";
+
+        case AP_ERROR_AUTHENTICATION:
+            return "Authentication failed";
+
+        case AP_ERROR_OPERATION_FAILED:
+            return "Operation failed";
+
         default:
             return "Unknown";
     }

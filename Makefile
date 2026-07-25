@@ -8,11 +8,13 @@ TARGET  := automation-platform
 SRC_DIRS := \
 	core/src \
 	adapters/logger \
-	examples/minimal
+	examples/minimal \
+	adapters/mqtt
 
 INC_DIRS := \
 	core/include \
-	adapters/logger
+	adapters/logger \
+	adapters/mqtt
 
 BUILD_DIR := build
 
@@ -26,7 +28,7 @@ CFLAGS  := -std=c11 \
            $(addprefix -I,$(INC_DIRS))
 
 # Linker
-LDFLAGS :=
+LDFLAGS := -lmosquitto
 
 # Quellen automatisch finden
 SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))

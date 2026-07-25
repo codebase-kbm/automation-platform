@@ -27,7 +27,7 @@ void ap_dispatcher_init(void);
  * @param handler Event callback.
  * @return true on success.
  */
-bool ap_dispatcher_register(ap_event_handler_t handler);
+ap_result_t ap_dispatcher_register(ap_event_handler_t handler);
 
 /**
  * @brief Publish an event.

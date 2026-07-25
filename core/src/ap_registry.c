@@ -13,7 +13,7 @@ void ap_registry_init(void)
 ap_result_t ap_registry_register(const ap_signal_t *signal)
 {
     if (signal == NULL)
-        return AP_ERROR_INVALID_ID;
+        return AP_ERROR_INVALID_ARGUMENT;
 
     /* Duplicate ID? */
     if (ap_registry_find(signal->id) != NULL)

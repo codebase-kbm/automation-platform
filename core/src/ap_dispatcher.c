@@ -11,7 +11,7 @@ void ap_dispatcher_init(void)
     handler_count = 0;
 }
 
-bool ap_dispatcher_register(ap_event_handler_t handler)
+ap_result_t ap_dispatcher_register(ap_event_handler_t handler)
 {
     if (handler == NULL)
         return AP_ERROR_INVALID_ARGUMENT;

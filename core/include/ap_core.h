@@ -1,20 +1,16 @@
 #ifndef AP_CORE_H
 #define AP_CORE_H
 
+#include "ap_result.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Initialize the Automation Platform Core.
- *
- * Initializes all core components.
- */
-void ap_core_init(void);
+ap_result_t ap_core_init(void);
 
-/**
- * @brief Shutdown the Automation Platform Core.
- */
+ap_result_t ap_core_process(void);
+
 void ap_core_shutdown(void);
 
 #ifdef __cplusplus
