@@ -28,7 +28,7 @@ CFLAGS  := -std=c11 \
            $(addprefix -I,$(INC_DIRS))
 
 # Linker
-LDFLAGS := -lmosquitto
+LDFLAGS := -lmosquitto -lcjson
 
 # Quellen automatisch finden
 SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))

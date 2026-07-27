@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <time.h>
 
 #include "ap_core.h"
@@ -10,6 +9,8 @@
 
 #include "logger.h"
 #include "mqtt.h"
+#include "mqtt_config.h"
+#include "mqtt_mapping.h"
 
 
 int main(void)
@@ -18,165 +19,217 @@ int main(void)
     printf(" Automation Platform - Core Test\n");
     printf("=========================================\n\n");
 
-    /*
-     * Core initialization
-     */
+
     if (ap_core_init() != AP_OK)
     {
         printf("Core initialization failed.\n");
         return 1;
     }
-	ap_logger_init();
+
+
+    ap_logger_init();
+
 
     printf("Core initialized.\n\n");
 
 
-ap_mqtt_config_t mqtt_config =
-{
-    .host = "127.0.0.1",
-    .port = 1883,
-    .username = "automation",
-    .password = "password"
-};
-
-ap_result_t mqtt_result =
-    ap_mqtt_init(&mqtt_config);
-
-if (mqtt_result != AP_OK)
-{
-    printf(
-        "MQTT initialization failed: %s\n",
-        ap_result_string(mqtt_result)
-    );
-
-    return 1;
-}
-
-
-printf("MQTT connected.\n");
-
-ap_mqtt_subscribe(
-    "automation/signal/#"
-);
-
     /*
-     * Signals
+     * MQTT configuration
      */
 
-	ap_event_t event;
-	
-    ap_signal_t temperature =
-    {
-        .id = 100,
-        .type = AP_SIGNAL_FLOAT
-    };
+    ap_mqtt_config_t mqtt_config = {0};
 
-    ap_signal_t temperature_display =
-    {
-        .id = 200,
-        .type = AP_SIGNAL_FLOAT
-    };
 
-    ap_signal_t temperature_log =
-    {
-        .id = 201,
-        .type = AP_SIGNAL_FLOAT
-    };
+    ap_result_t result =
+        ap_mqtt_config_load(
+            "adapters/mqtt/mqtt.json",
+            &mqtt_config
+        );
 
-    if (ap_registry_register(&temperature) != AP_OK ||
-        ap_registry_register(&temperature_display) != AP_OK ||
-        ap_registry_register(&temperature_log) != AP_OK)
+
+    if (result != AP_OK)
     {
-        printf("Signal registration failed.\n");
+        printf(
+            "MQTT configuration failed: %s\n",
+            ap_result_string(result)
+        );
+
         return 1;
     }
 
-    printf("Signals registered.\n");
 
     /*
-     * Mappings
+     * MQTT mappings
+     *
+     * Signals are registered here if they
+     * do not already exist in the Core.
+     */
+
+    result =
+        ap_mqtt_mapping_load(
+            "adapters/mqtt/mqtt.json"
+        );
+
+
+    if (result != AP_OK)
+    {
+        printf(
+            "MQTT mapping configuration failed: %s\n",
+            ap_result_string(result)
+        );
+
+        ap_mqtt_config_free(
+            &mqtt_config
+        );
+
+        return 1;
+    }
+
+
+    /*
+     * MQTT initialization
+     */
+
+    result =
+        ap_mqtt_init(
+            &mqtt_config
+        );
+
+
+    if (result != AP_OK)
+    {
+        printf(
+            "MQTT initialization failed: %s\n",
+            ap_result_string(result)
+        );
+
+        ap_mqtt_config_free(
+            &mqtt_config
+        );
+
+        return 1;
+    }
+
+
+    ap_mqtt_config_free(
+        &mqtt_config
+    );
+
+
+    printf("MQTT connected.\n");
+
+
+    /*
+     * Core mappings
      */
 
     if (ap_mapper_add(100, 200) != AP_OK ||
         ap_mapper_add(100, 201) != AP_OK)
     {
-        printf("Mapping registration failed.\n");
+        printf(
+            "Mapping registration failed.\n"
+        );
+
         return 1;
     }
 
-    printf("Mappings registered.\n\n");
 
-printf("Publishing event...\n");
+    printf(
+        "Mappings registered.\n\n"
+    );
 
-ap_event_init(&event,
-              &temperature,
-              100);
-
-event.value.f = 21.5f;
-ap_dispatcher_publish(&event);
-
-struct timespec delay =
-{
-    .tv_sec = 0,
-    .tv_nsec = 100000000
-};
-
-nanosleep(&delay, NULL);
-
-const ap_signal_t *signal =
-    ap_registry_find(100);
-
-if (signal == NULL)
-{
-    printf("Signal not found\n");
-    return 0;
-}
-
-ap_event_init(
-    &event,
-    signal,
-    0
-);
-
-event.value.f = 21.8f;
-
-ap_mqtt_publish_event(
-    &event
-);
-
-while (1)
-{
-    ap_result_t result =
-        ap_core_process();
-
-    if (result != AP_OK)
-    {
-        printf(
-            "Core process failed: %s\n",
-            ap_result_string(result)
-        );
-
-        break;
-    }
-	
-	ap_mqtt_process();
-
-    struct timespec delay =
-    {
-        .tv_sec = 0,
-        .tv_nsec = 100000000
-    };
-
-    nanosleep(&delay, NULL);
-}
 
     /*
-     * Shutdown
+     * Test event
      */
+
+    const ap_signal_t *signal =
+        ap_registry_find(
+            100
+        );
+
+
+    if (signal == NULL)
+    {
+        printf(
+            "Signal not found\n"
+        );
+
+        return 1;
+    }
+
+
+    ap_event_t event;
+
+
+    ap_event_init(
+        &event,
+        signal,
+        100
+    );
+
+
+    event.value.f =
+        21.8f;
+
+
+    printf(
+        "Publishing event...\n"
+    );
+
+
+    ap_dispatcher_publish(
+        &event
+    );
+
+
+    while (1)
+    {
+        result =
+            ap_core_process();
+
+
+        if (result != AP_OK)
+        {
+            printf(
+                "Core process failed: %s\n",
+                ap_result_string(result)
+            );
+
+            break;
+        }
+
+
+        ap_mqtt_process();
+
+
+        struct timespec delay =
+        {
+            .tv_sec = 0,
+            .tv_nsec = 100000000
+        };
+
+
+        nanosleep(
+            &delay,
+            NULL
+        );
+    }
+
+
+    ap_mqtt_shutdown();
+
+
+    ap_mqtt_mapping_free();
+
 
     ap_core_shutdown();
 
-    printf("\nDone.\n");
+
+    printf(
+        "\nDone.\n"
+    );
+
 
     return 0;
 }

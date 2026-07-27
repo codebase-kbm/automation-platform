@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "ap_dispatcher.h"
 #include "ap_event.h"
 #include "ap_registry.h"
 #include "mqtt_mapping.h"
+#include "mqtt_config.h"
 
 static struct mosquitto *mqtt_client;
 
@@ -44,17 +44,27 @@ static void ap_mqtt_message_callback(
         return;
     }
 
+	if (mapping->direction ==
+		AP_MQTT_DIRECTION_PUBLISH)
+	{
+		printf(
+			"[MQTT] Mapping is publish-only: %s\n",
+			message->topic
+		);
+
+		return;
+	}
 
     const ap_signal_t *signal =
         ap_registry_find(
-            mapping->signal_id
+            mapping->signal.id
         );
 
     if (signal == NULL)
     {
         printf(
             "[MQTT] Signal %u not found\n",
-            mapping->signal_id
+            mapping->signal.id
         );
 
         return;
@@ -217,14 +227,9 @@ ap_result_t ap_mqtt_init(
 
     if (result != MOSQ_ERR_SUCCESS)
     {
-        mosquitto_destroy(
-            mqtt_client
-        );
-
+        mosquitto_destroy(mqtt_client);
         mqtt_client = NULL;
-
         mosquitto_lib_cleanup();
-
         return AP_ERROR_AUTHENTICATION;
     }
 
@@ -245,96 +250,52 @@ ap_result_t ap_mqtt_init(
 
     if (result != MOSQ_ERR_SUCCESS)
     {
-        mosquitto_destroy(
-            mqtt_client
-        );
-
+        mosquitto_destroy(mqtt_client);
         mqtt_client = NULL;
-
         mosquitto_lib_cleanup();
-
         return AP_ERROR_CONNECTION;
     }
-
 
     uint32_t mapping_count =
         ap_mqtt_mapping_count();
 
-
-    for (uint32_t i = 0;
-         i < mapping_count;
-         i++)
+    for (uint32_t i = 0; i < mapping_count; i++)
     {
-        const ap_mqtt_mapping_t *mapping =
-            ap_mqtt_mapping_get(i);
-
-
+        const ap_mqtt_mapping_t *mapping = ap_mqtt_mapping_get(i);
         if (mapping == NULL)
             continue;
 
+		if (mapping->direction == AP_MQTT_DIRECTION_SUBSCRIBE || mapping->direction == AP_MQTT_DIRECTION_BOTH)
+		{
+			result = mosquitto_subscribe(mqtt_client,NULL,mapping->topic,0);
 
-        result =
-            mosquitto_subscribe(
-                mqtt_client,
-                NULL,
-                mapping->topic,
-                0
-            );
-
-
-        if (result != MOSQ_ERR_SUCCESS)
-        {
-            printf(
-                "[MQTT] Failed to subscribe to: %s\n",
-                mapping->topic
-            );
-
-            return AP_ERROR_OPERATION_FAILED;
-        }
-
-
-        printf(
-            "[MQTT] Subscribed to: %s\n",
-            mapping->topic
-        );
+			if (result != MOSQ_ERR_SUCCESS)
+			{
+				printf("[MQTT] Failed to subscribe to: %s\n",mapping->topic);
+				return AP_ERROR_OPERATION_FAILED;
+			}
+			printf("[MQTT] Subscribed to: %s\n",mapping->topic);
+		}
     }
-
-
     return AP_OK;
 }
 
 
-ap_result_t ap_mqtt_subscribe(
-    const char *topic
-)
-{
-    if (mqtt_client == NULL ||
-        topic == NULL)
-    {
-        return AP_ERROR_INVALID_ARGUMENT;
-    }
+ap_result_t ap_mqtt_subscribe( const char *topic )
+{ 
+	if (mqtt_client == NULL || topic == NULL)
+	{ 
+		return AP_ERROR_INVALID_ARGUMENT;
+	} 
+	int result = mosquitto_subscribe( mqtt_client, NULL, topic, 0 );
+	if (result != MOSQ_ERR_SUCCESS)
+		return AP_ERROR_OPERATION_FAILED;
 
-
-    int result =
-        mosquitto_subscribe(
-            mqtt_client,
-            NULL,
-            topic,
-            0
-        );
-
-
-    if (result != MOSQ_ERR_SUCCESS)
-        return AP_ERROR_OPERATION_FAILED;
-
-
-    return AP_OK;
+	return AP_OK; 
 }
 
 
-ap_result_t ap_mqtt_publish_event(
-    const ap_event_t *event
-)
+ap_result_t ap_mqtt_publish_event(const ap_event_t *event)
 {
     if (mqtt_client == NULL ||
         event == NULL ||
@@ -342,36 +303,40 @@ ap_result_t ap_mqtt_publish_event(
     {
         return AP_ERROR_INVALID_ARGUMENT;
     }
-
-
+	
     const ap_signal_t *signal =
         event->signal;
-
 
     const ap_mqtt_mapping_t *mapping =
         ap_mqtt_mapping_find_by_signal(
             signal->id
         );
-
-
+	
     if (mapping == NULL)
     {
         printf(
             "[MQTT] No mapping for signal: %u\n",
             signal->id
         );
-
         return AP_ERROR_NOT_FOUND;
-    }
+    }	
+	
+	if (mapping->direction ==
+		AP_MQTT_DIRECTION_SUBSCRIBE)
+	{
+		printf(
+			"[MQTT] Signal %u is subscribe-only\n",
+			signal->id
+		);
 
-
+		return AP_ERROR_NOT_SUPPORTED;
+	}
+	
     char payload[256];
-
 
     switch (signal->type)
     {
         case AP_SIGNAL_BOOL:
-
             snprintf(
                 payload,
                 sizeof(payload),
@@ -380,54 +345,40 @@ ap_result_t ap_mqtt_publish_event(
                     ? "true"
                     : "false"
             );
-
             break;
 
-
         case AP_SIGNAL_INT32:
-
             snprintf(
                 payload,
                 sizeof(payload),
                 "%d",
                 event->value.i
             );
-
             break;
 
-
         case AP_SIGNAL_FLOAT:
-
             snprintf(
                 payload,
                 sizeof(payload),
                 "%.6f",
                 event->value.f
             );
-
             break;
 
-
         case AP_SIGNAL_STRING:
-
             if (event->value.s == NULL)
                 return AP_ERROR_INVALID_ARGUMENT;
-
             snprintf(
                 payload,
                 sizeof(payload),
                 "%s",
                 event->value.s
             );
-
             break;
 
-
         default:
-
             return AP_ERROR_NOT_SUPPORTED;
     }
-
 
     int result =
         mosquitto_publish(
@@ -440,39 +391,23 @@ ap_result_t ap_mqtt_publish_event(
             false
         );
 
-
     if (result != MOSQ_ERR_SUCCESS)
         return AP_ERROR_OPERATION_FAILED;
 
-
-    printf(
-        "[MQTT] Published signal %u -> %s\n",
-        signal->id,
-        mapping->topic
-    );
-
-
+    printf("[MQTT] Published signal %u -> %s\n",signal->id,mapping->topic);
     return AP_OK;
 }
-
 
 ap_result_t ap_mqtt_process(void)
 {
     if (mqtt_client == NULL)
         return AP_ERROR_INVALID_ARGUMENT;
 
-
-    int result =
-        mosquitto_loop(
-            mqtt_client,
-            0,
-            1
-        );
+    int result = mosquitto_loop(mqtt_client,0,1);
 
 
     if (result != MOSQ_ERR_SUCCESS)
         return AP_ERROR_OPERATION_FAILED;
-
 
     return AP_OK;
 }
@@ -482,17 +417,9 @@ void ap_mqtt_shutdown(void)
 {
     if (mqtt_client != NULL)
     {
-        mosquitto_disconnect(
-            mqtt_client
-        );
-
-        mosquitto_destroy(
-            mqtt_client
-        );
-
+        mosquitto_disconnect(mqtt_client);
+        mosquitto_destroy(mqtt_client);
         mqtt_client = NULL;
     }
-
-
     mosquitto_lib_cleanup();
 }
