@@ -42,7 +42,7 @@ int main(void)
 
     ap_result_t result =
         ap_mqtt_config_load(
-            "adapters/mqtt/mqtt.json",
+            "modules/mqtt/mqtt.json",
             &mqtt_config
         );
 
@@ -67,7 +67,7 @@ int main(void)
 
     result =
         ap_mqtt_mapping_load(
-            "adapters/mqtt/mqtt.json"
+            "modules/mqtt/mqtt.json"
         );
 
 
@@ -143,30 +143,27 @@ int main(void)
      * Test event
      */
 
-    const ap_signal_t *signal =
-        ap_registry_find(
-            100
-        );
+	const ap_object_t *object =
+		ap_registry_find(
+			100
+		);
 
+	if (object == NULL)
+	{
+		printf(
+			"Object not found\n"
+		);
 
-    if (signal == NULL)
-    {
-        printf(
-            "Signal not found\n"
-        );
+		return 1;
+	}
 
-        return 1;
-    }
+	ap_event_t event;
 
-
-    ap_event_t event;
-
-
-    ap_event_init(
-        &event,
-        signal,
-        100
-    );
+	ap_event_init(
+		&event,
+		object,
+		100
+	);
 
 
     event.value.f =

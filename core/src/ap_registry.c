@@ -1,38 +1,37 @@
 #include "ap_registry.h"
+#include "ap_config.h"
 
-#define AP_MAX_SIGNALS 256
-
-static const ap_signal_t *signals[AP_MAX_SIGNALS];
-static uint32_t signal_count;
+static const ap_object_t *objects[AP_MAX_VARIABLES];
+static uint32_t object_count;
 
 void ap_registry_init(void)
 {
-    signal_count = 0;
+    object_count = 0;
 }
 
-ap_result_t ap_registry_register(const ap_signal_t *signal)
+ap_result_t ap_registry_register(const ap_object_t *object)
 {
-    if (signal == NULL)
+    if (object == NULL)
         return AP_ERROR_INVALID_ARGUMENT;
 
     /* Duplicate ID? */
-    if (ap_registry_find(signal->id) != NULL)
+    if (ap_registry_find(object->id) != NULL)
         return AP_ERROR_ALREADY_EXISTS;
 
-    if (signal_count >= AP_MAX_SIGNALS)
+    if (object_count >= AP_MAX_VARIABLES)
         return AP_ERROR_FULL;
 
-    signals[signal_count++] = signal;
+    objects[object_count++] = object;
 
     return AP_OK;
 }
 
-const ap_signal_t *ap_registry_find(uint32_t id)
+const ap_object_t *ap_registry_find(ap_object_id_t id)
 {
-    for (uint32_t i = 0; i < signal_count; i++)
+    for (uint32_t i = 0; i < object_count; i++)
     {
-        if (signals[i]->id == id)
-            return signals[i];
+        if (objects[i]->id == id)
+            return objects[i];
     }
 
     return NULL;

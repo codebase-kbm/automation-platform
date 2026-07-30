@@ -1,23 +1,24 @@
 #include "ap_mapper.h"
 #include "ap_dispatcher.h"
 #include "ap_registry.h"
-
-#define AP_MAX_MAPPINGS 256
+#include "ap_config.h"
 
 static ap_mapping_t mappings[AP_MAX_MAPPINGS];
 static uint32_t mapping_count;
+
 static void ap_mapper_event_handler(const ap_event_t *event);
 
 void ap_mapper_init(void)
 {
     mapping_count = 0;
-	    ap_dispatcher_register(
+
+    ap_dispatcher_register(
         ap_mapper_event_handler
     );
 }
 
-ap_result_t ap_mapper_add(uint32_t source,
-                   uint32_t destination)
+ap_result_t ap_mapper_add(ap_object_id_t source,
+                          ap_object_id_t destination)
 {
     if (mapping_count >= AP_MAX_MAPPINGS)
         return AP_ERROR_FULL;
@@ -31,8 +32,8 @@ ap_result_t ap_mapper_add(uint32_t source,
 }
 
 uint32_t ap_mapper_process(const ap_event_t *input,
-                           ap_event_t *output,
-                           uint32_t max_events)
+                            ap_event_t *output,
+                            uint32_t max_events)
 {
     uint32_t count = 0;
 
@@ -41,23 +42,26 @@ uint32_t ap_mapper_process(const ap_event_t *input,
 
     for (uint32_t i = 0; i < mapping_count; i++)
     {
-        if (mappings[i].source != input->signal->id)
+        if (mappings[i].source != input->object->id)
             continue;
 
-        const ap_signal_t *signal =
+        const ap_object_t *object =
             ap_registry_find(mappings[i].destination);
 
-        if (signal == NULL)
+        if (object == NULL)
             continue;
-		
-		if (signal->type != input->signal->type)
-		continue;
+
+        if (object->object_type != AP_OBJECT_SIGNAL)
+            continue;
+
+        if (object->value_type != input->object->value_type)
+            continue;
 
         if (count >= max_events)
             break;
 
         output[count] = *input;
-        output[count].signal = signal;
+        output[count].object = object;
 
         count++;
     }

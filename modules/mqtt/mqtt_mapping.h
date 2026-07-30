@@ -4,11 +4,12 @@
 #include <stdint.h>
 
 #include "ap_result.h"
-#include "ap_signal.h"
+#include "ap_object.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 typedef enum
 {
     AP_MQTT_DIRECTION_SUBSCRIBE,
@@ -20,34 +21,29 @@ typedef enum
 typedef struct
 {
     const char *topic;
-    ap_signal_t signal;
-	ap_mqtt_direction_t direction;
-
+    ap_object_t object;
+    ap_mqtt_direction_t direction;
+	int qos;
+	bool retain;
 } ap_mqtt_mapping_t;
-
 
 ap_result_t ap_mqtt_mapping_load(
     const char *filename
 );
 
-
 void ap_mqtt_mapping_free(void);
-
 
 const ap_mqtt_mapping_t *
 ap_mqtt_mapping_find_by_topic(
     const char *topic
 );
 
-
 const ap_mqtt_mapping_t *
-ap_mqtt_mapping_find_by_signal(
-    uint32_t signal_id
+ap_mqtt_mapping_find_by_object(
+    ap_object_id_t object_id
 );
 
-
 uint32_t ap_mqtt_mapping_count(void);
-
 
 const ap_mqtt_mapping_t *
 ap_mqtt_mapping_get(

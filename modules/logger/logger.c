@@ -7,38 +7,39 @@
 
 static void ap_logger_event_handler(const ap_event_t *event)
 {
-    if (event == NULL || event->signal == NULL)
+    if (event == NULL || event->object == NULL)
         return;
 
     printf("[%010" PRIu64 "] ", event->timestamp);
 
-    printf("Signal %u = ",
-           event->signal->id);
+    printf("Object %" PRIu32 " = ",
+           event->object->id);
 
-    switch (event->signal->type)
+    switch (event->object->value_type)
     {
-        case AP_SIGNAL_BOOL:
+        case AP_VALUE_BOOL:
             printf("%s",
                    event->value.b ? "true" : "false");
             break;
 
-        case AP_SIGNAL_INT32:
+        case AP_VALUE_INT32:
             printf("%" PRId32,
                    event->value.i);
             break;
 
-        case AP_SIGNAL_FLOAT:
+        case AP_VALUE_FLOAT:
             printf("%f",
                    event->value.f);
             break;
 
-        case AP_SIGNAL_STRING:
+        case AP_VALUE_STRING:
             printf("%s",
                    event->value.s ? event->value.s : "(null)");
             break;
 
+        case AP_VALUE_NONE:
         default:
-            printf("<unknown>");
+            printf("<no value>");
             break;
     }
 

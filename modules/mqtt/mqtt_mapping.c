@@ -19,81 +19,55 @@ static char *ap_mqtt_mapping_strdup(
     if (source == NULL)
         return NULL;
 
+    size_t length = strlen(source) + 1;
 
-    size_t length =
-        strlen(source) + 1;
-
-
-    char *copy =
-        malloc(length);
-
+    char *copy = malloc(length);
 
     if (copy == NULL)
         return NULL;
 
-
-    memcpy(
-        copy,
-        source,
-        length
-    );
-
+    memcpy(copy, source, length);
 
     return copy;
 }
 
 
 static ap_result_t
-ap_mqtt_mapping_parse_signal_type(
+ap_mqtt_mapping_parse_value_type(
     const char *type,
-    ap_signal_type_t *result
+    ap_value_type_t *result
 )
 {
-    if (type == NULL ||
-        result == NULL)
-    {
+    if (type == NULL || result == NULL)
         return AP_ERROR_INVALID_ARGUMENT;
-    }
-
 
     if (strcmp(type, "bool") == 0)
     {
-        *result =
-            AP_SIGNAL_BOOL;
-
+        *result = AP_VALUE_BOOL;
         return AP_OK;
     }
-
 
     if (strcmp(type, "int32") == 0)
     {
-        *result =
-            AP_SIGNAL_INT32;
-
+        *result = AP_VALUE_INT32;
         return AP_OK;
     }
-
 
     if (strcmp(type, "float") == 0)
     {
-        *result =
-            AP_SIGNAL_FLOAT;
-
+        *result = AP_VALUE_FLOAT;
         return AP_OK;
     }
-
 
     if (strcmp(type, "string") == 0)
     {
-        *result =
-            AP_SIGNAL_STRING;
-
+        *result = AP_VALUE_STRING;
         return AP_OK;
     }
 
-
     return AP_ERROR_INVALID_TYPE;
 }
+
 
 static ap_result_t
 ap_mqtt_mapping_parse_direction(
@@ -101,42 +75,30 @@ ap_mqtt_mapping_parse_direction(
     ap_mqtt_direction_t *result
 )
 {
-    if (direction == NULL ||
-        result == NULL)
-    {
+    if (direction == NULL || result == NULL)
         return AP_ERROR_INVALID_ARGUMENT;
-    }
-
 
     if (strcmp(direction, "subscribe") == 0)
     {
-        *result =
-            AP_MQTT_DIRECTION_SUBSCRIBE;
-
+        *result = AP_MQTT_DIRECTION_SUBSCRIBE;
         return AP_OK;
     }
-
 
     if (strcmp(direction, "publish") == 0)
     {
-        *result =
-            AP_MQTT_DIRECTION_PUBLISH;
-
+        *result = AP_MQTT_DIRECTION_PUBLISH;
         return AP_OK;
     }
-
 
     if (strcmp(direction, "both") == 0)
     {
-        *result =
-            AP_MQTT_DIRECTION_BOTH;
-
+        *result = AP_MQTT_DIRECTION_BOTH;
         return AP_OK;
     }
 
-
     return AP_ERROR_INVALID_ARGUMENT;
 }
+
 
 ap_result_t ap_mqtt_mapping_load(
     const char *filename
@@ -145,56 +107,32 @@ ap_result_t ap_mqtt_mapping_load(
     if (filename == NULL)
         return AP_ERROR_INVALID_ARGUMENT;
 
-
     ap_mqtt_mapping_free();
 
-
-    FILE *file =
-        fopen(
-            filename,
-            "rb"
-        );
-
+    FILE *file = fopen(filename, "rb");
 
     if (file == NULL)
         return AP_ERROR_NOT_FOUND;
 
+    fseek(file, 0, SEEK_END);
 
-    fseek(
-        file,
-        0,
-        SEEK_END
-    );
-
-
-    long file_size =
-        ftell(file);
-
+    long file_size = ftell(file);
 
     rewind(file);
-
 
     if (file_size <= 0)
     {
         fclose(file);
-
         return AP_ERROR_INVALID_ARGUMENT;
     }
 
-
-    char *buffer =
-        malloc(
-            (size_t)file_size + 1
-        );
-
+    char *buffer = malloc((size_t)file_size + 1);
 
     if (buffer == NULL)
     {
         fclose(file);
-
         return AP_ERROR_OUT_OF_MEMORY;
     }
-
 
     size_t read_size =
         fread(
@@ -204,23 +142,16 @@ ap_result_t ap_mqtt_mapping_load(
             file
         );
 
-
     fclose(file);
-
 
     buffer[read_size] = '\0';
 
-
-    cJSON *root =
-        cJSON_Parse(buffer);
-
+    cJSON *root = cJSON_Parse(buffer);
 
     free(buffer);
 
-
     if (root == NULL)
         return AP_ERROR_INVALID_ARGUMENT;
-
 
     cJSON *mapping_array =
         cJSON_GetObjectItemCaseSensitive(
@@ -228,28 +159,19 @@ ap_result_t ap_mqtt_mapping_load(
             "mappings"
         );
 
-
     if (!cJSON_IsArray(mapping_array))
     {
         cJSON_Delete(root);
-
         return AP_ERROR_INVALID_ARGUMENT;
     }
 
-
-    int count =
-        cJSON_GetArraySize(
-            mapping_array
-        );
-
+    int count = cJSON_GetArraySize(mapping_array);
 
     if (count <= 0)
     {
         cJSON_Delete(root);
-
         return AP_OK;
     }
-
 
     mappings =
         calloc(
@@ -257,18 +179,14 @@ ap_result_t ap_mqtt_mapping_load(
             sizeof(ap_mqtt_mapping_t)
         );
 
-
     if (mappings == NULL)
     {
         cJSON_Delete(root);
-
         return AP_ERROR_OUT_OF_MEMORY;
     }
 
 
-    for (int i = 0;
-         i < count;
-         i++)
+    for (int i = 0; i < count; i++)
     {
         cJSON *item =
             cJSON_GetArrayItem(
@@ -276,20 +194,17 @@ ap_result_t ap_mqtt_mapping_load(
                 i
             );
 
-
         cJSON *topic =
             cJSON_GetObjectItemCaseSensitive(
                 item,
                 "topic"
             );
 
-
-        cJSON *signal_id =
+        cJSON *object_id =
             cJSON_GetObjectItemCaseSensitive(
                 item,
-                "signal_id"
+                "object_id"
             );
-
 
         cJSON *type =
             cJSON_GetObjectItemCaseSensitive(
@@ -297,92 +212,137 @@ ap_result_t ap_mqtt_mapping_load(
                 "type"
             );
 
-		cJSON *direction =
+        cJSON *direction =
+            cJSON_GetObjectItemCaseSensitive(
+                item,
+                "direction"
+            );
+			
+		cJSON *qos =
 			cJSON_GetObjectItemCaseSensitive(
 				item,
-				"direction"
+				"qos"
 			);
 
-		if (!cJSON_IsString(topic) ||
-			!cJSON_IsNumber(signal_id) ||
-			!cJSON_IsString(type) ||
-			!cJSON_IsString(direction))
-		{
-			ap_mqtt_mapping_free();
-
-			cJSON_Delete(root);
-
-			return AP_ERROR_INVALID_ARGUMENT;
-		}
-
-		/* Direction parsen */
-
-		ap_result_t direction_result =
-			ap_mqtt_mapping_parse_direction(
-				direction->valuestring,
-				&mappings[i].direction
+		cJSON *retain =
+			cJSON_GetObjectItemCaseSensitive(
+				item,
+				"retain"
 			);
 
 
-		if (direction_result != AP_OK)
+        if (!cJSON_IsString(topic) ||
+            !cJSON_IsNumber(object_id) ||
+            !cJSON_IsString(type) ||
+            !cJSON_IsString(direction))
+        {
+            ap_mqtt_mapping_free();
+            cJSON_Delete(root);
+
+            return AP_ERROR_INVALID_ARGUMENT;
+        }
+
+
+        ap_result_t direction_result =
+            ap_mqtt_mapping_parse_direction(
+                direction->valuestring,
+                &mappings[i].direction
+            );
+
+        if (direction_result != AP_OK)
+        {
+            ap_mqtt_mapping_free();
+            cJSON_Delete(root);
+
+            return direction_result;
+        }
+		
+		/* Defaults */
+		mappings[i].qos = 0;
+		mappings[i].retain = false;
+
+		if (qos != NULL)
 		{
-			ap_mqtt_mapping_free();
+			if (!cJSON_IsNumber(qos) ||
+				qos->valueint < 0 ||
+				qos->valueint > 2)
+			{
+				ap_mqtt_mapping_free();
+				cJSON_Delete(root);
 
-			cJSON_Delete(root);
+				return AP_ERROR_INVALID_ARGUMENT;
+			}
 
-			return direction_result;
+			mappings[i].qos = qos->valueint;
 		}
+
+		if (retain != NULL)
+		{
+			if (!cJSON_IsBool(retain))
+			{
+				ap_mqtt_mapping_free();
+				cJSON_Delete(root);
+
+				return AP_ERROR_INVALID_ARGUMENT;
+			}
+
+			mappings[i].retain = cJSON_IsTrue(retain);
+		}
+
 
         mappings[i].topic =
             ap_mqtt_mapping_strdup(
                 topic->valuestring
             );
 
-
         if (mappings[i].topic == NULL)
         {
             ap_mqtt_mapping_free();
-
             cJSON_Delete(root);
 
             return AP_ERROR_OUT_OF_MEMORY;
         }
 
 
-        mappings[i].signal.id =
-            (uint32_t)signal_id->valueint;
+        mappings[i].object.id =
+            (ap_object_id_t)object_id->valueint;
+
+        mappings[i].object.object_type =
+            AP_OBJECT_SIGNAL;
+
+        mappings[i].object.status =
+            AP_OK;
 
 
         ap_result_t type_result =
-            ap_mqtt_mapping_parse_signal_type(
+            ap_mqtt_mapping_parse_value_type(
                 type->valuestring,
-                &mappings[i].signal.type
+                &mappings[i].object.value_type
             );
-
 
         if (type_result != AP_OK)
         {
             ap_mqtt_mapping_free();
-
             cJSON_Delete(root);
 
             return type_result;
         }
 
 
-        const ap_signal_t *existing_signal =
+        const ap_object_t *existing_object =
             ap_registry_find(
-                mappings[i].signal.id
+                mappings[i].object.id
             );
 
 
-        if (existing_signal != NULL)
+        if (existing_object != NULL)
         {
-            if (existing_signal->type !=
-                mappings[i].signal.type)
+            if (existing_object->object_type !=
+                    AP_OBJECT_SIGNAL ||
+                existing_object->value_type !=
+                    mappings[i].object.value_type)
             {
                 ap_mqtt_mapping_free();
-
                 cJSON_Delete(root);
 
                 return AP_ERROR_INVALID_TYPE;
@@ -392,14 +352,12 @@ ap_result_t ap_mqtt_mapping_load(
         {
             ap_result_t register_result =
                 ap_registry_register(
-                    &mappings[i].signal
+                    &mappings[i].object
                 );
-
 
             if (register_result != AP_OK)
             {
                 ap_mqtt_mapping_free();
-
                 cJSON_Delete(root);
 
                 return register_result;
@@ -408,12 +366,9 @@ ap_result_t ap_mqtt_mapping_load(
     }
 
 
-    mapping_count =
-        (uint32_t)count;
-
+    mapping_count = (uint32_t)count;
 
     cJSON_Delete(root);
-
 
     return AP_OK;
 }
@@ -424,23 +379,17 @@ void ap_mqtt_mapping_free(void)
     if (mappings == NULL)
     {
         mapping_count = 0;
-
         return;
     }
-
 
     for (uint32_t i = 0;
          i < mapping_count;
          i++)
     {
-        free(
-            (void *)mappings[i].topic
-        );
+        free((void *)mappings[i].topic);
     }
 
-
     free(mappings);
-
 
     mappings = NULL;
     mapping_count = 0;
@@ -455,7 +404,6 @@ ap_mqtt_mapping_find_by_topic(
     if (topic == NULL)
         return NULL;
 
-
     for (uint32_t i = 0;
          i < mapping_count;
          i++)
@@ -469,27 +417,22 @@ ap_mqtt_mapping_find_by_topic(
         }
     }
 
-
     return NULL;
 }
 
 
 const ap_mqtt_mapping_t *
-ap_mqtt_mapping_find_by_signal(
-    uint32_t signal_id
+ap_mqtt_mapping_find_by_object(
+    ap_object_id_t object_id
 )
 {
     for (uint32_t i = 0;
          i < mapping_count;
          i++)
     {
-        if (mappings[i].signal.id ==
-            signal_id)
-        {
+        if (mappings[i].object.id == object_id)
             return &mappings[i];
-        }
     }
-
 
     return NULL;
 }
@@ -509,7 +452,5 @@ ap_mqtt_mapping_get(
     if (index >= mapping_count)
         return NULL;
 
-
     return &mappings[index];
 }
-

@@ -2,7 +2,7 @@
 #define AP_EVENT_H
 
 #include "ap_common.h"
-#include "ap_signal.h"
+#include "ap_object.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +11,7 @@ extern "C" {
 /**
  * @brief Event value type.
  *
- * The value type must match the signal definition.
+ * The value type must match the object definition.
  */
 typedef union
 {
@@ -38,17 +38,17 @@ typedef enum
  */
 typedef struct
 {
-    /** Signal definition */
-    const ap_signal_t *signal;
+    /** Object definition */
+    const ap_object_t *object;
 
     /** Timestamp (µs since boot or epoch depending on platform) */
     uint64_t timestamp;
 
     /** Optional source node */
-    uint32_t source;
+    ap_object_id_t source;
 
     /** Event flags */
-    uint32_t flags;
+    uint8_t flags;
 
     /** Runtime value */
     ap_event_value_t value;
@@ -56,9 +56,9 @@ typedef struct
 } ap_event_t;
 
 void ap_event_init(ap_event_t *event,
-                   const ap_signal_t *signal,
-                   uint16_t source);
-				   
+                   const ap_object_t *object,
+                   ap_object_id_t source);
+
 #ifdef __cplusplus
 }
 #endif

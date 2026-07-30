@@ -11,6 +11,19 @@ extern "C" {
 
 #define AP_CONFIG_VERSION 1
 
+/* Core limits */
+#ifndef AP_MAX_VARIABLES
+#define AP_MAX_VARIABLES 256
+#endif
+
+#ifndef AP_MAX_EVENT_HANDLERS
+#define AP_MAX_EVENT_HANDLERS 16
+#endif
+
+#ifndef AP_MAX_MAPPINGS
+#define AP_MAX_MAPPINGS 256
+#endif
+
 typedef enum
 {
     AP_CONFIG_SECTION_CORE = 1,

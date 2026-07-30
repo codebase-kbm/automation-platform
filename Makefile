@@ -7,14 +7,14 @@ TARGET  := automation-platform
 # Verzeichnisse
 SRC_DIRS := \
 	core/src \
-	adapters/logger \
+	modules/logger \
 	examples/minimal \
-	adapters/mqtt
+	modules/mqtt
 
 INC_DIRS := \
 	core/include \
-	adapters/logger \
-	adapters/mqtt
+	modules/logger \
+	modules/mqtt
 
 BUILD_DIR := build
 
