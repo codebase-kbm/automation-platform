@@ -1,31 +1,44 @@
 # Compiler
-CC      := gcc
+CC := gcc
 
 # Projektname
-TARGET  := automation-platform
+TARGET := automation-platform
 
 # Verzeichnisse
+CORE_SRC := \
+    $(wildcard core/src/*.c)
+	
+CONFIG_CORE_SRC := \
+    core/src/ap_config_reader.c \
+    core/src/ap_core.c \
+    core/src/ap_dispatcher.c \
+    core/src/ap_event.c \
+    core/src/ap_registry.c \
+    core/src/ap_result.c \
+    core/src/ap_timestamp.c
+	
 SRC_DIRS := \
-	core/src \
-	modules/logger \
-	examples/minimal \
-	modules/mqtt
+    core/src \
+    examples/minimal \
+    $(wildcard plugins/*) \
+    $(wildcard plugins/*/adapter/linux)
 
 INC_DIRS := \
-	core/include \
-	modules/logger \
-	modules/mqtt
+    core/include \
+    $(wildcard plugins/*) \
+    $(wildcard plugins/*/adapter/linux) \
+    tools/config-compiler
 
 BUILD_DIR := build
 
 # Compiler Optionen
-CFLAGS  := -std=c11 \
-           -D_POSIX_C_SOURCE=200809L \
-           -Wall \
-           -Wextra \
-           -Wpedantic \
-           -g \
-           $(addprefix -I,$(INC_DIRS))
+CFLAGS := -std=c11 \
+          -D_POSIX_C_SOURCE=200809L \
+          -Wall \
+          -Wextra \
+          -Wpedantic \
+          -g \
+          $(addprefix -I,$(INC_DIRS))
 
 # Linker
 LDFLAGS := -lmosquitto -lcjson
@@ -36,28 +49,116 @@ SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 # Objektdateien
 OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
 
-# Standardziel
-all: $(BUILD_DIR)/$(TARGET)
 
-# Linken
+# --------------------------------------------------
+# Config Compiler
+# --------------------------------------------------
+
+CONFIG_COMPILER_SRC := \
+    tools/config-compiler/main.c \
+    tools/config-compiler/compiler.c \
+    tools/config-compiler/ap_plugin_compiler_manager.c \
+    $(wildcard plugins/*/c-config/*.c) \
+    $(CONFIG_CORE_SRC)
+
+CONFIG_COMPILER := $(BUILD_DIR)/config-compiler
+
+CONFIG_XML := config/config.xml
+CONFIG_BIN := $(BUILD_DIR)/config.bin
+
+CONFIG_CFLAGS := $(CFLAGS) \
+                 $(shell pkg-config --cflags libxml-2.0)
+
+CONFIG_LIBS := $(shell pkg-config --libs libxml-2.0)
+
+# --------------------------------------------------
+# Plugin Test
+# --------------------------------------------------
+
+PLUGIN_TEST_SRC := \
+    examples/plugin_test/main.c \
+    core/src/ap_plugin_manager.c \
+    core/src/ap_config_reader.c \
+    plugins/mqtt/mqtt.c
+
+PLUGIN_TEST := $(BUILD_DIR)/plugin-test
+
+
+$(PLUGIN_TEST): $(PLUGIN_TEST_SRC)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
+
+
+plugin-test: $(PLUGIN_TEST)
+	./$(PLUGIN_TEST)
+
+# --------------------------------------------------
+# Standardziel
+# --------------------------------------------------
+
+all: $(BUILD_DIR)/$(TARGET) $(CONFIG_COMPILER) $(CONFIG_BIN)
+
+
+# --------------------------------------------------
+# Hauptprogramm
+# --------------------------------------------------
+
 $(BUILD_DIR)/$(TARGET): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
+
+# --------------------------------------------------
 # Kompilieren
+# --------------------------------------------------
+
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Aufräumen
+
+# --------------------------------------------------
+# Config Compiler
+# --------------------------------------------------
+
+$(CONFIG_COMPILER): $(CONFIG_COMPILER_SRC)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CONFIG_CFLAGS) $^ -o $@ $(CONFIG_LIBS)
+
+config-compiler: $(CONFIG_COMPILER)
+
+$(CONFIG_BIN): $(CONFIG_XML) $(CONFIG_COMPILER)
+	./$(CONFIG_COMPILER) $(CONFIG_XML) $(CONFIG_BIN)
+
+
+config: $(CONFIG_BIN)
+
+
+# --------------------------------------------------
+# Config test tools
+# --------------------------------------------------
+
+config_dump: examples/config_dump.c core/src/ap_config_reader.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $^ -o $(BUILD_DIR)/$@
+
+config_create: examples/config_create.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $^ -o $(BUILD_DIR)/$@
+
+
+# --------------------------------------------------
+# Cleanup
+# --------------------------------------------------
+
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -f $(CONFIG_BIN)
 
-# Neu bauen
 rebuild: clean all
 
-# Ausführen
 run: all
 	./$(BUILD_DIR)/$(TARGET)
 
-.PHONY: all clean rebuild run
+
+.PHONY: all clean rebuild run config config_dump config_create config-compiler plugin-test

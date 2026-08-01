@@ -2,7 +2,7 @@
 #include "ap_dispatcher.h"
 #include "ap_registry.h"
 #include "ap_timestamp.h"
-#include "ap_mapper.h"
+
 
 #include <stddef.h>
 
@@ -17,7 +17,6 @@ ap_result_t ap_core_init(void)
     ap_timestamp_init();
     ap_dispatcher_init();
 	ap_registry_init();
-	ap_mapper_init();
 
     g_core_start_time = ap_timestamp_now();
 

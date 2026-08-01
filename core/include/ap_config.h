@@ -7,57 +7,57 @@
 extern "C" {
 #endif
 
-#define AP_CONFIG_MAGIC 0x41504346u /* "APCF" */
+/*
+ * Binary configuration format
+ *
+ * All multi-byte values are little-endian.
+ *
+ * File:
+ *     [file header]
+ *     [object header + payload]
+ *     [object header + payload]
+ *     ...
+ */
 
-#define AP_CONFIG_VERSION 1
+/* "AP" */
+#define AP_CONFIG_MAGIC       			0x4150u
+#define AP_CONFIG_VERSION     			1u
+#define AP_CONFIG_HEADER_SIZE 			3u
+#define AP_CONFIG_OBJECT_HEADER_SIZE 	9u
 
-/* Core limits */
-#ifndef AP_MAX_VARIABLES
-#define AP_MAX_VARIABLES 256
-#endif
+/*
+ * Configuration object types
+ */
 
-#ifndef AP_MAX_EVENT_HANDLERS
-#define AP_MAX_EVENT_HANDLERS 16
-#endif
-
-#ifndef AP_MAX_MAPPINGS
-#define AP_MAX_MAPPINGS 256
-#endif
-
-typedef enum
-{
-    AP_CONFIG_SECTION_CORE = 1,
-    AP_CONFIG_SECTION_CAN  = 2,
-    AP_CONFIG_SECTION_MQTT = 3
-
-} ap_config_section_type_t;
-
+#define AP_CONFIG_OBJECT_NODE      1u
+#define AP_CONFIG_OBJECT_MODULE    2u
 
 /**
- * @brief Configuration file header.
+ * @brief Binary configuration file header.
+ *
+ * Size: 3 bytes
  */
 typedef struct
 {
-    uint32_t magic;
-    uint16_t version;
-    uint16_t section_count;
-
-    uint32_t total_size;
+    uint16_t magic;
+    uint8_t  version;
 
 } ap_config_header_t;
 
 
 /**
- * @brief Generic configuration section header.
+ * @brief Generic object header.
+ *
+ * Size: 9 bytes
  */
 typedef struct
 {
-    uint16_t type;
-    uint16_t version;
+    uint32_t object_id;
+    uint8_t  object_type;
+    uint32_t payload_length;
 
-    uint32_t size;
+} ap_config_object_header_t;
 
-} ap_config_section_header_t;
 
 
 #ifdef __cplusplus

@@ -1,0 +1,50 @@
+<automation>
+	<node id="1">
+		<module id="500" type="mqtt">
+			<broker host="127.0.0.1" port="1883"/>
+			<auth user="user" password="password"/>
+			<client id="automation-core"/>
+
+			<mappings>
+				<mapping
+					topic="automation/temperature"
+					object_id="100"
+					type="float"
+					direction="publish"
+					qos="1"
+					retain="true"/>
+
+				<mapping
+					topic="automation/counter"
+					object_id="101"
+					type="int32"
+					direction="publish"/>
+
+				<mapping
+					topic="automation/bool"
+					object_id="102"
+					type="bool"
+					direction="subscribe"/>
+
+				<mapping
+					topic="automation/status"
+					object_id="103"
+					type="string"
+					direction="publish"/>
+
+				<mapping
+					topic="Umwelt/Dachsensor/System/Temperatur"
+					object_id="104"
+					type="float"
+					direction="subscribe"/>
+
+				<mapping
+					topic="automation/Dachboden/Sammelstoerung"
+					object_id="105"
+					type="bool"
+					direction="publish"
+					qos="1"/>
+			</mappings>
+		</module>
+	</node>
+</automation>

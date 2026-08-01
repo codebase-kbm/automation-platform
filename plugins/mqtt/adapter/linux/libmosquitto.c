@@ -1,18 +1,68 @@
-#include "mqtt.h"
+#include "mqtt_adapter.h"
 
 #include <mosquitto.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <stdio.h>
 
 #include "ap_dispatcher.h"
 #include "ap_event.h"
 #include "ap_registry.h"
-#include "mqtt_mapping.h"
-#include "mqtt_config.h"
+
 
 static struct mosquitto *mqtt_client;
+static const ap_mqtt_config_t *mqtt_config;
+
+
+static const ap_mqtt_mapping_t *
+find_mapping_by_topic(
+    const char *topic)
+{
+    if (mqtt_config == NULL ||
+        topic == NULL)
+    {
+        return NULL;
+    }
+
+    for (uint8_t i = 0;
+         i < mqtt_config->mapping_count;
+         i++)
+    {
+        const ap_mqtt_mapping_t *mapping =
+            &mqtt_config->mappings[i];
+
+        if (mapping->topic == NULL)
+            continue;
+
+        if (strcmp(mapping->topic, topic) == 0)
+            return mapping;
+    }
+
+    return NULL;
+}
+
+
+static const ap_mqtt_mapping_t *
+find_mapping_by_object(
+    uint32_t object_id)
+{
+    if (mqtt_config == NULL)
+        return NULL;
+
+    for (uint8_t i = 0;
+         i < mqtt_config->mapping_count;
+         i++)
+    {
+        const ap_mqtt_mapping_t *mapping =
+            &mqtt_config->mappings[i];
+
+        if (mapping->object_id == object_id)
+            return mapping;
+    }
+
+    return NULL;
+}
 
 
 static void ap_mqtt_message_callback(
@@ -31,67 +81,31 @@ static void ap_mqtt_message_callback(
     }
 
     const ap_mqtt_mapping_t *mapping =
-        ap_mqtt_mapping_find_by_topic(
+        find_mapping_by_topic(
             message->topic
         );
 
     if (mapping == NULL)
-    {
-        printf(
-            "[MQTT] No mapping for topic: %s\n",
-            message->topic
-        );
-
         return;
-    }
 
-    if (mapping->direction ==
-        AP_MQTT_DIRECTION_PUBLISH)
-    {
-        printf(
-            "[MQTT] Mapping is publish-only: %s\n",
-            message->topic
-        );
-
+    if (!(mapping->flags & AP_MQTT_MAP_FLAG_SUBSCRIBE))
         return;
-    }
 
     const ap_object_t *object =
         ap_registry_find(
-            mapping->object.id
+            mapping->object_id
         );
 
-    if (object == NULL)
+    if (object == NULL ||
+        object->object_type != AP_OBJECT_SIGNAL)
     {
-        printf(
-            "[MQTT] Object %" PRIu32 " not found\n",
-            mapping->object.id
-        );
-
-        return;
-    }
-
-    if (object->object_type != AP_OBJECT_SIGNAL)
-    {
-        printf(
-            "[MQTT] Object %" PRIu32 " is not a signal\n",
-            object->id
-        );
-
         return;
     }
 
     char payload[256];
 
     if ((size_t)message->payloadlen >= sizeof(payload))
-    {
-        printf(
-            "[MQTT] Payload too large for topic: %s\n",
-            message->topic
-        );
-
         return;
-    }
 
     memcpy(
         payload,
@@ -114,22 +128,13 @@ static void ap_mqtt_message_callback(
         case AP_VALUE_BOOL:
 
             if (strcmp(payload, "true") == 0)
-            {
                 event.value.b = true;
-            }
-            else if (strcmp(payload, "false") == 0)
-            {
-                event.value.b = false;
-            }
-            else
-            {
-                printf(
-                    "[MQTT] Invalid boolean payload: %s\n",
-                    payload
-                );
 
+            else if (strcmp(payload, "false") == 0)
+                event.value.b = false;
+
+            else
                 return;
-            }
 
             break;
 
@@ -167,18 +172,8 @@ static void ap_mqtt_message_callback(
         case AP_VALUE_NONE:
         default:
 
-            printf(
-                "[MQTT] Unsupported object value type\n"
-            );
-
             return;
     }
-
-    printf(
-        "[MQTT] Received topic '%s' -> Object %" PRIu32 "\n",
-        message->topic,
-        object->id
-    );
 
     ap_dispatcher_publish(
         &event
@@ -187,15 +182,13 @@ static void ap_mqtt_message_callback(
 
 
 ap_result_t ap_mqtt_init(
-    const ap_mqtt_config_t *config
-)
+    const ap_mqtt_config_t *config)
 {
-    if (config == NULL)
-        return AP_ERROR_INVALID_ARGUMENT;
-
-    if (config->host == NULL ||
-        config->username == NULL ||
-        config->password == NULL)
+    if (config == NULL ||
+        config->host == NULL ||
+        config->user == NULL ||
+        config->password == NULL ||
+        config->mappings == NULL)
     {
         return AP_ERROR_INVALID_ARGUMENT;
     }
@@ -208,7 +201,7 @@ ap_result_t ap_mqtt_init(
 
     mqtt_client =
         mosquitto_new(
-            NULL,
+            config->client_id,
             true,
             NULL
         );
@@ -222,7 +215,7 @@ ap_result_t ap_mqtt_init(
     result =
         mosquitto_username_pw_set(
             mqtt_client,
-            config->username,
+            config->user,
             config->password
         );
 
@@ -257,44 +250,44 @@ ap_result_t ap_mqtt_init(
         return AP_ERROR_CONNECTION;
     }
 
-    uint32_t mapping_count =
-        ap_mqtt_mapping_count();
+    mqtt_config = config;
 
-    for (uint32_t i = 0; i < mapping_count; i++)
+    for (uint8_t i = 0;
+         i < config->mapping_count;
+         i++)
     {
         const ap_mqtt_mapping_t *mapping =
-            ap_mqtt_mapping_get(i);
+            &config->mappings[i];
 
-        if (mapping == NULL)
-            continue;
-
-        if (mapping->direction ==
-                AP_MQTT_DIRECTION_SUBSCRIBE ||
-            mapping->direction ==
-                AP_MQTT_DIRECTION_BOTH)
+        if (!(mapping->flags &
+              AP_MQTT_MAP_FLAG_SUBSCRIBE))
         {
-            result =
-                mosquitto_subscribe(
-                    mqtt_client,
-                    NULL,
-                    mapping->topic,
-                    0
-                );
+            continue;
+        }
 
-            if (result != MOSQ_ERR_SUCCESS)
-            {
-                printf(
-                    "[MQTT] Failed to subscribe to: %s\n",
-                    mapping->topic
-                );
+        uint8_t qos =
+            (mapping->flags &
+             AP_MQTT_MAP_QOS_MASK)
+            >> AP_MQTT_MAP_QOS_SHIFT;
 
-                return AP_ERROR_OPERATION_FAILED;
-            }
-
-            printf(
-                "[MQTT] Subscribed to: %s\n",
-                mapping->topic
+        result =
+            mosquitto_subscribe(
+                mqtt_client,
+                NULL,
+                mapping->topic,
+                qos
             );
+
+        if (result != MOSQ_ERR_SUCCESS)
+        {
+            mqtt_config = NULL;
+
+            mosquitto_disconnect(mqtt_client);
+            mosquitto_destroy(mqtt_client);
+            mqtt_client = NULL;
+            mosquitto_lib_cleanup();
+
+            return AP_ERROR_OPERATION_FAILED;
         }
     }
 
@@ -303,8 +296,7 @@ ap_result_t ap_mqtt_init(
 
 
 ap_result_t ap_mqtt_subscribe(
-    const char *topic
-)
+    const char *topic)
 {
     if (mqtt_client == NULL ||
         topic == NULL)
@@ -328,10 +320,10 @@ ap_result_t ap_mqtt_subscribe(
 
 
 ap_result_t ap_mqtt_publish_event(
-    const ap_event_t *event
-)
+    const ap_event_t *event)
 {
     if (mqtt_client == NULL ||
+        mqtt_config == NULL ||
         event == NULL ||
         event->object == NULL)
     {
@@ -345,28 +337,16 @@ ap_result_t ap_mqtt_publish_event(
         return AP_ERROR_INVALID_TYPE;
 
     const ap_mqtt_mapping_t *mapping =
-        ap_mqtt_mapping_find_by_object(
+        find_mapping_by_object(
             object->id
         );
 
     if (mapping == NULL)
-    {
-        printf(
-            "[MQTT] No mapping for object: %" PRIu32 "\n",
-            object->id
-        );
-
         return AP_ERROR_NOT_FOUND;
-    }
 
-    if (mapping->direction ==
-        AP_MQTT_DIRECTION_SUBSCRIBE)
+    if (mapping->flags &
+        AP_MQTT_MAP_FLAG_SUBSCRIBE)
     {
-        printf(
-            "[MQTT] Object %" PRIu32 " is subscribe-only\n",
-            object->id
-        );
-
         return AP_ERROR_NOT_SUPPORTED;
     }
 
@@ -433,6 +413,15 @@ ap_result_t ap_mqtt_publish_event(
             return AP_ERROR_NOT_SUPPORTED;
     }
 
+    uint8_t qos =
+        (mapping->flags &
+         AP_MQTT_MAP_QOS_MASK)
+        >> AP_MQTT_MAP_QOS_SHIFT;
+
+    bool retain =
+        (mapping->flags &
+         AP_MQTT_MAP_FLAG_RETAIN) != 0;
+
     int result =
         mosquitto_publish(
             mqtt_client,
@@ -440,18 +429,12 @@ ap_result_t ap_mqtt_publish_event(
             mapping->topic,
             (int)strlen(payload),
             payload,
-			mapping->qos,
-			mapping->retain
+            qos,
+            retain
         );
 
     if (result != MOSQ_ERR_SUCCESS)
         return AP_ERROR_OPERATION_FAILED;
-
-    printf(
-        "[MQTT] Published object %" PRIu32 " -> %s\n",
-        object->id,
-        mapping->topic
-    );
 
     return AP_OK;
 }
@@ -478,6 +461,8 @@ ap_result_t ap_mqtt_process(void)
 
 void ap_mqtt_shutdown(void)
 {
+    mqtt_config = NULL;
+
     if (mqtt_client != NULL)
     {
         mosquitto_disconnect(mqtt_client);
