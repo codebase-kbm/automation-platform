@@ -19,7 +19,7 @@ CONFIG_CORE_SRC := \
 	
 SRC_DIRS := \
     core/src \
-    examples/minimal \
+    examples/core-test \
     $(wildcard plugins/*) \
     $(wildcard plugins/*/adapter/linux)
 
@@ -76,12 +76,12 @@ CONFIG_LIBS := $(shell pkg-config --libs libxml-2.0)
 # --------------------------------------------------
 
 PLUGIN_TEST_SRC := \
-    examples/plugin_test/main.c \
+    examples/dummy-plugin/main.c \
     core/src/ap_plugin_manager.c \
     core/src/ap_config_reader.c \
-    plugins/mqtt/mqtt.c
+    plugins/dummy/dummy_plugin.c
 
-PLUGIN_TEST := $(BUILD_DIR)/plugin-test
+PLUGIN_TEST := $(BUILD_DIR)/dummy-plugin
 
 
 $(PLUGIN_TEST): $(PLUGIN_TEST_SRC)
@@ -89,7 +89,7 @@ $(PLUGIN_TEST): $(PLUGIN_TEST_SRC)
 	$(CC) $(CFLAGS) $^ -o $@
 
 
-plugin-test: $(PLUGIN_TEST)
+dummy-plugin: $(PLUGIN_TEST)
 	./$(PLUGIN_TEST)
 
 # --------------------------------------------------
@@ -138,14 +138,9 @@ config: $(CONFIG_BIN)
 # Config test tools
 # --------------------------------------------------
 
-config_dump: examples/config_dump.c core/src/ap_config_reader.c
+config_dump: tools/config-dump/main.c core/src/ap_config_reader.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $^ -o $(BUILD_DIR)/$@
-
-config_create: examples/config_create.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) $^ -o $(BUILD_DIR)/$@
-
 
 # --------------------------------------------------
 # Cleanup
@@ -161,4 +156,4 @@ run: all
 	./$(BUILD_DIR)/$(TARGET)
 
 
-.PHONY: all clean rebuild run config config_dump config_create config-compiler plugin-test
+.PHONY: all clean rebuild run config config_dump config-compiler dummy-plugin

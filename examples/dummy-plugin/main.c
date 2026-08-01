@@ -2,23 +2,34 @@
 
 #include "ap_plugin_manager.h"
 #include "ap_config_reader.h"
+#include "ap_result.h"
 
 
-int main(void)
+int main(int argc, char **argv)
 {
     printf("=============================\n");
     printf(" Plugin Manager Test\n");
     printf("=============================\n\n");
 
-    if (ap_config_reader_open("config.bin") != AP_OK)
+    const char *config_path = "build/config.bin";
+
+    if (argc > 1)
+    {
+        config_path = argv[1];
+    }
+
+    if (ap_config_reader_open(config_path) != AP_OK)
     {
         printf("Failed to open config.bin\n");
         return 1;
     }
 
-    if (ap_plugin_manager_process() != AP_OK)
+	ap_result_t result;
+	result = ap_plugin_manager_process();
+
+    if (result != AP_OK)
     {
-        printf("Plugin manager processing failed\n");
+        printf("Plugin manager processing failed: %d\n",result);
         ap_config_reader_close();
         return 1;
     }

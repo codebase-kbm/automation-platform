@@ -7,7 +7,7 @@
 #include "ap_result.h"
 
 
-int main(void)
+int main(int argc, char **argv)
 {
     ap_result_t result;
 
@@ -16,43 +16,33 @@ int main(void)
     printf("=========================================\n\n");
 
     result = ap_core_init();
-
     if (result != AP_OK)
     {
-        printf(
-            "Core initialization failed: %s\n",
-            ap_result_string(result)
-        );
-
+        printf("Core initialization failed: %s\n",ap_result_string(result));
         return 1;
     }
 
-    result =
-        ap_config_reader_open("config.bin");
+    const char *config_path = "build/config.bin";
+    if (argc > 1)
+    {
+        config_path = argv[1];
+    }
+    
+    result = ap_config_reader_open(config_path);
 
     if (result != AP_OK)
     {
-        printf(
-            "Config open failed: %s\n",
-            ap_result_string(result)
-        );
-
+        printf("Config open failed: %s\n",ap_result_string(result));
         ap_core_shutdown();
         return 1;
     }
 
-    result =
-        ap_plugin_manager_process();
-
+    result = ap_plugin_manager_process();
     ap_config_reader_close();
 
     if (result != AP_OK)
     {
-        printf(
-            "Plugin manager processing failed: %s\n",
-            ap_result_string(result)
-        );
-
+        printf("Plugin manager processing failed: %s\n",ap_result_string(result));
         ap_core_shutdown();
         return 1;
     }
@@ -65,11 +55,7 @@ int main(void)
 
         if (result != AP_OK)
         {
-            printf(
-                "Core process failed: %s\n",
-                ap_result_string(result)
-            );
-
+            printf("Core process failed: %s\n",ap_result_string(result));
             break;
         }
 
@@ -78,7 +64,6 @@ int main(void)
             .tv_sec = 0,
             .tv_nsec = 100000000
         };
-
         nanosleep(&delay, NULL);
     }
 

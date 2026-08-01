@@ -162,7 +162,7 @@ Signal Events
 The Core only sees the resulting Objects and Events.
 
 ### Dependency Boundaries
-
+```
 External dependencies belong to the layer that requires them.
 
 Examples:
@@ -176,5 +176,5 @@ MQTT Plugin
 
 Config Compiler
     └── libxml2
-
+```
 This keeps the Core portable and allows platform-specific implementations to be replaced without changing the Core architecture.
