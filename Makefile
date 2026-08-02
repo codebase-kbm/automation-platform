@@ -55,9 +55,7 @@ OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRCS))
 # --------------------------------------------------
 
 CONFIG_COMPILER_SRC := \
-    tools/config-compiler/main.c \
-    tools/config-compiler/compiler.c \
-    tools/config-compiler/ap_plugin_compiler_manager.c \
+    $(wildcard tools/config-compiler/*.c) \
     $(wildcard plugins/*/c-config/*.c) \
     $(CONFIG_CORE_SRC)
 
