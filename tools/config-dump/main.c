@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "ap_config_reader.h"
-#include "modules.h"
+#include "ap_module.h"
 #include "ap_object.h"
 
 int main(int argc, char **argv)
@@ -44,17 +44,23 @@ int main(int argc, char **argv)
 			uint8_t module_type = object.payload[0];
 
 			printf(
-				"Object %u: type=%u module=%u payload=%u\n",
+				"Object %u: type=%u module=%u payloadlength=%u\n",
 				object.header.object_id,
 				object.header.object_type,
 				module_type,
 				object.header.payload_length
 			);
+            printf("Payload:\n");
+            for (uint32_t i = 0; i < object.header.payload_length; i++)
+            {
+                printf("%02X ",object.payload[i]);
+            }
+            printf("\n\n");
 		}
 		else
 		{
 			printf(
-				"Object %u: type=%u payload=%u\n",
+				"Object %u: type=%u payloadlength=%u\n\n",
 				object.header.object_id,
 				object.header.object_type,
 				object.header.payload_length

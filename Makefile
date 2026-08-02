@@ -136,7 +136,7 @@ config: $(CONFIG_BIN)
 # Config test tools
 # --------------------------------------------------
 
-config_dump: tools/config-dump/main.c core/src/ap_config_reader.c
+config-dump: tools/config-dump/main.c core/src/ap_config_reader.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $^ -o $(BUILD_DIR)/$@
 
@@ -154,4 +154,4 @@ run: all
 	./$(BUILD_DIR)/$(TARGET)
 
 
-.PHONY: all clean rebuild run config config_dump config-compiler dummy-plugin
+.PHONY: all clean rebuild run config config-dump config-compiler dummy-plugin
