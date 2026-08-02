@@ -1,44 +1,81 @@
 # Roadmap
 
-## v0.1
+## Core
 
-- Automation Core
-- Event Dispatcher
-- Logger Adapter
-- Timestamp Support
-- Timeout Supervision
-- Linux Build System
-
----
-
-## v0.2
-
-- MQTT Adapter
-- SocketCAN Adapter
-- Initial Mapping System
+- [x] Automation Core
+- [x] Event / Signal Model
+- [x] Dispatcher
+- [x] Registry
+- [x] Timestamp Support
+- [x] Plugin Manager
+- [x] Linux Build System
 
 ---
 
-## v0.3
+## Configuration
 
-- Configuration Compiler
-- Binary Mapping Format
-- Statistics
-
----
-
-## v0.4
-
-- Modbus
-- OpenTherm
-- Service Adapters
+- [x] XML Configuration Base
+- [x] Configuration Compiler
+- [x] Config Dump Tool
 
 ---
 
-## Future
+## Plugins
 
-- Visual Configuration Tool
+### MQTT
+- [x] MQTT Backend
+- [x] Signal Handling
+- [x] Mapping
+- [x] Configuration Integration
+
+### CAN Plugin
+- [x] CAN Backend
+- [x] Configuration Integration
+- [ ] Mapping
+
+### Socket Plugin
+- [ ] Socket Backend
+- [ ] Socket Multi-Instance
+- [ ] Signal Handling
+- [ ] Mapping
+- [ ] Configuration Integration
+
+### Supervision Plugin
+- [ ] Signal Handling
+- [ ] Configuration Integration
+
+### System Monitor Plugin
+- [ ] Signal Handling
+- [ ] Mapping
+- [ ] Configuration Integration
+
+### Influx DB Plugin
+- [ ] Signal Handling
+- [ ] Mapping
+- [ ] Configuration Integration
+
+### Crestron ISC Plugin
+- [ ] Signal Handling
+- [ ] Mapping
+- [ ] Configuration Integration
+
+### Syslog Plugin
+- [ ] Socket Backend
+- [ ] Signal Handling
+- [ ] Mapping
+- [ ] Configuration Integration
+
+---
+
+## Platform / Runtime / Tools
+- [ ] ARM Testport
+- [ ] Logger Monitoring Tool
+- [ ] Visual Configuration Tool
+ 
+---
+ 
+## Ideas for Future Development
 - REST API
-- JSON Transform Plugin
-- WebSocket
-- Distributed Node Discovery
+- Web UI
+- Distributed Nodes / Remote Core
+ 
