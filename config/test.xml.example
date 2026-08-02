@@ -46,5 +46,52 @@
 					qos="1"/>
 			</mappings>
 		</module>
+		<module id="501" type="can">
+			<interface>
+       			name="can0"
+        		bitrate="500000"
+    		</interface>
+    		<mappings>
+				<mapping
+					object_id="110"
+					direction="rx"
+					type="int32">
+
+					<frame id="0x003"/>
+
+					<field
+						start_bit="8"
+						length="16"
+						encoding="le"
+						signed="true"
+						scale="0.1"
+						offset="-40"/>
+
+				</mapping>
+		        <mapping
+					object_id="4443"
+					direction="tx"
+					type="buffer">
+
+					<frame id="0x044"/>
+
+				</mapping>
+				<mapping
+					object_id="200"
+					direction="tx"
+					type="bool">
+
+					<frame id="0x044"/>
+
+					<trigger value="true">
+						<data encoding="hex">
+							02 C8
+						</data>
+					</trigger>
+
+				</mapping>
+			</mappings>	
+		</module>
+		
 	</node>
 </automation>

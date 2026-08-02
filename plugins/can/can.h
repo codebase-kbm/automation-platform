@@ -1,0 +1,88 @@
+#ifndef AP_CAN_PLUGIN_H
+#define AP_CAN_PLUGIN_H
+
+#include "ap_plugin.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define AP_CAN_FIELD_FLAG_SIGNED 0x01u
+
+typedef enum
+{
+    AP_CAN_DIRECTION_RX = 0,
+    AP_CAN_DIRECTION_TX = 1
+} ap_can_direction_t;
+
+typedef enum
+{
+    AP_CAN_MAPPING_FIELD = 0,
+    AP_CAN_MAPPING_BUFFER,
+    AP_CAN_MAPPING_TRIGGER
+} ap_can_mapping_type_t;
+
+typedef enum
+{
+    AP_CAN_ENCODING_NONE = 0,
+    AP_CAN_ENCODING_LE,
+    AP_CAN_ENCODING_BE
+} ap_can_encoding_t;
+
+typedef struct
+{
+    uint8_t start_bit;
+    uint8_t length;
+    uint8_t encoding;
+    uint8_t flags;
+    float scale;
+    float offset;
+} ap_can_field_t;
+
+typedef struct
+{
+    uint8_t length;
+    uint8_t data[8];
+} ap_can_trigger_data_t;
+
+typedef struct
+{
+    bool value;
+    ap_can_trigger_data_t data;
+} ap_can_trigger_t;
+
+typedef struct
+{
+    uint32_t object_id;
+    uint8_t signal_type;
+    ap_can_direction_t direction;
+    ap_can_mapping_type_t mapping_type;
+    union
+    {
+        ap_can_field_t field;
+        ap_can_trigger_t trigger;
+    };
+} ap_can_mapping_t;
+
+typedef struct
+{
+    uint32_t can_id;
+    uint8_t dlc;
+    uint16_t mapping_count;
+    ap_can_mapping_t *mappings;
+} ap_can_frame_t;
+
+typedef struct
+{
+    char *interface;
+    uint32_t bitrate;
+    uint16_t frame_count;
+    ap_can_frame_t *frames;
+} ap_can_config_t;
+
+extern const ap_plugin_t ap_can_plugin;
+
+#ifdef __cplusplus
+}
+#endif
+#endif
