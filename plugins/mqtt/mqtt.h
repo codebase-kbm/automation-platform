@@ -12,7 +12,6 @@ extern "C" {
 #define AP_MQTT_MAP_QOS_MASK        0x06u
 #define AP_MQTT_MAP_FLAG_RETAIN     0x08u
 
-
 typedef struct
 {
     uint32_t object_id;
