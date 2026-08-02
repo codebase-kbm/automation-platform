@@ -216,24 +216,61 @@ static ap_result_t ap_can_module_load(
 /* Plugin init / shutdown                            */
 /* -------------------------------------------------- */
 
+static void *can_backend_context;
+
+
 static ap_result_t ap_can_module_init(void)
 {
-    /*
-     * CAN transport is not connected yet.
-     *
-     * SocketCAN / ESP32-CAN will be attached
-     * through the abstract CAN interface later.
-     */
+    ap_can_backend_config_t config;
+
+    config.interface = can_config.interface;
+    config.bitrate   = can_config.bitrate;
+
+    can_backend_context = ap_can_backend.create();
+
+    if (can_backend_context == NULL)
+        return AP_ERROR_OUT_OF_MEMORY;
+
+    if (ap_can_backend.open(
+            can_backend_context,
+            &config) != 0)
+    {
+        ap_can_backend.destroy(can_backend_context);
+        can_backend_context = NULL;
+
+        return AP_ERROR_INVALID_ARGUMENT;
+    }
 
     return AP_OK;
 }
 
+static ap_result_t ap_can_module_process(void)
+{
+    ap_can_frame_t frame;
+
+    if (ap_can_backend.receive(
+            can_backend_context,
+            &frame) != 0)
+    {
+        return AP_ERROR_OPERATION_FAILED;
+    }
+
+    /* CAN frame → Mapping → AP Event */
+
+    return AP_OK;
+}
 
 static void ap_can_module_shutdown(void)
 {
+    if (can_backend_context != NULL)
+    {
+        ap_can_backend.close(can_backend_context);
+        ap_can_backend.destroy(can_backend_context);
+        can_backend_context = NULL;
+    }
+
     ap_can_config_clear(&can_config);
 }
-
 
 /* -------------------------------------------------- */
 /* Plugin definition                                  */
@@ -249,6 +286,7 @@ const ap_plugin_t ap_can_plugin =
 
     .load = ap_can_module_load,
     .init = ap_can_module_init,
+    .process = ap_can_module_process,
     .shutdown = ap_can_module_shutdown
 };
 

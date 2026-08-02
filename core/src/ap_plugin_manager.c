@@ -6,9 +6,14 @@
 #include "ap_config_reader.h"
 #include "ap_object.h"
 
+
 extern const ap_plugin_t * const __start_ap_plugins[];
 extern const ap_plugin_t * const __stop_ap_plugins[];
 
+
+/* -------------------------------------------------- */
+/* Plugin lookup                                      */
+/* -------------------------------------------------- */
 
 const ap_plugin_t *
 ap_plugin_manager_find(
@@ -30,8 +35,12 @@ ap_plugin_manager_find(
 }
 
 
+/* -------------------------------------------------- */
+/* Manager init                                       */
+/* -------------------------------------------------- */
+
 ap_result_t
-ap_plugin_manager_process(void)
+ap_plugin_manager_init(void)
 {
     ap_config_object_t object;
 
@@ -75,6 +84,40 @@ ap_plugin_manager_process(void)
 
     return AP_OK;
 }
+
+
+/* -------------------------------------------------- */
+/* Runtime processing                                 */
+/* -------------------------------------------------- */
+
+ap_result_t
+ap_plugin_manager_process(void)
+{
+    const ap_plugin_t * const *plugin;
+
+    for (
+        plugin = __start_ap_plugins;
+        plugin < __stop_ap_plugins;
+        plugin++
+    )
+    {
+        if ((*plugin)->process == NULL)
+            continue;
+
+        ap_result_t result =
+            (*plugin)->process();
+
+        if (result != AP_OK)
+            return result;
+    }
+
+    return AP_OK;
+}
+
+
+/* -------------------------------------------------- */
+/* Shutdown                                           */
+/* -------------------------------------------------- */
 
 void
 ap_plugin_manager_shutdown(void)

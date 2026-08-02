@@ -9,6 +9,7 @@ extern "C" {
 
 #define AP_CAN_FIELD_FLAG_SIGNED 0x01u
 
+
 typedef enum
 {
     AP_CAN_DIRECTION_RX = 0,
@@ -96,6 +97,52 @@ typedef struct
 } ap_can_config_t;
 
 
+/* -------------------------------------------------- */
+/* CAN Backend API                                    */
+/* -------------------------------------------------- */
+
+typedef struct
+{
+    uint32_t can_id;
+    uint8_t dlc;
+    uint8_t data[8];
+
+} ap_can_frame_t;
+
+
+typedef struct
+{
+    const char *interface;
+    uint32_t bitrate;
+
+} ap_can_backend_config_t;
+
+
+typedef struct
+{
+    void *(*create)(void);
+
+    void (*destroy)(
+        void *context);
+
+    int (*open)(
+        void *context,
+        const ap_can_backend_config_t *config);
+
+    void (*close)(
+        void *context);
+
+    int (*send)(
+        void *context,
+        const ap_can_frame_t *frame);
+
+    int (*receive)(
+        void *context,
+        ap_can_frame_t *frame);
+
+} ap_can_backend_t;
+
+extern const ap_can_backend_t ap_can_backend;
 extern const ap_plugin_t ap_can_plugin;
 
 

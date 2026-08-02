@@ -43,6 +43,8 @@ typedef struct ap_plugin
 
     ap_result_t (*init)(void);
 
+    ap_result_t (*process)(void);
+
     void (*shutdown)(void);
 
 } ap_plugin_t;
