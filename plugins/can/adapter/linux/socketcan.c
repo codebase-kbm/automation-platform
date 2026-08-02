@@ -2,6 +2,7 @@
 
 #include "can.h"
 
+#include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,18 +90,8 @@ static int socketcan_open(void *context,const ap_can_backend_config_t *config)
         return -1;
     }
 
-    memset(
-        &interface,
-        0,
-        sizeof(interface)
-    );
-
-    strncpy(
-        interface.ifr_name,
-        config->interface,
-        IFNAMSIZ - 1
-    );
-
+    memset(&interface,0,sizeof(interface));
+    strncpy(interface.ifr_name,config->interface,IFNAMSIZ - 1);
     interface.ifr_name[IFNAMSIZ - 1] = '\0';
 
     if (ioctl(
@@ -120,33 +111,27 @@ static int socketcan_open(void *context,const ap_can_backend_config_t *config)
         return -1;
     }
 
-    memset(
-        &address,
-        0,
-        sizeof(address)
-    );
+    memset(&address,0,sizeof(address));
 
     address.can_family  = AF_CAN;
     address.can_ifindex = interface.ifr_ifindex;
 
-    if (bind(
-            ctx->socket_fd,
-            (struct sockaddr *)&address,
-            sizeof(address)) < 0)
+    if (bind(ctx->socket_fd,(struct sockaddr *)&address,sizeof(address)) < 0)
     {
-        fprintf(
-            stderr,
-            "SocketCAN: error binding interface %s: %s\n",
-            config->interface,
-            strerror(errno)
-        );
-
+        fprintf(stderr,"SocketCAN: error binding interface %s: %s\n",config->interface,strerror(errno));
         close(ctx->socket_fd);
         ctx->socket_fd = -1;
-
         return -1;
     }
 
+    int flags = fcntl(ctx->socket_fd,F_GETFL,0);
+
+    if (flags < 0 || fcntl(ctx->socket_fd,F_SETFL,flags | O_NONBLOCK) < 0)
+    {
+        close(ctx->socket_fd);
+        ctx->socket_fd = -1;
+        return -1;
+    }
     /*
      * SocketCAN does not configure the CAN bitrate here.
      * The interface is configured externally.
@@ -221,15 +206,12 @@ static int socketcan_send(
 }
 
 
-static int socketcan_receive(
-    void *context,
-    ap_can_frame_t *frame)
+static int socketcan_receive(void *context,ap_can_frame_t *frame)
 {
     ap_socketcan_context_t *ctx = context;
     struct can_frame can_frame;
 
-    if (ctx == NULL ||
-        frame == NULL)
+    if (ctx == NULL || frame == NULL)
     {
         return -1;
     }
@@ -237,13 +219,18 @@ static int socketcan_receive(
     if (ctx->socket_fd < 0)
         return -1;
 
-    if (read(
-            ctx->socket_fd,
-            &can_frame,
-            sizeof(can_frame)) != sizeof(can_frame))
+    ssize_t result = read(ctx->socket_fd,&can_frame,sizeof(can_frame));
+    if (result < 0)
     {
-        return -1;
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            return 1;   /* kein Frame vorhanden */
+        }
+        return -1;      /* echter Fehler */
     }
+
+    if (result != sizeof(can_frame))
+        return -1;
 
     if (can_frame.can_dlc > CAN_MAX_DLEN)
         return -1;

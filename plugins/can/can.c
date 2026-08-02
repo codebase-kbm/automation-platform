@@ -248,14 +248,21 @@ static ap_result_t ap_can_module_process(void)
 {
     ap_can_frame_t frame;
 
-    if (ap_can_backend.receive(
+    int result =
+        ap_can_backend.receive(
             can_backend_context,
-            &frame) != 0)
-    {
-        return AP_ERROR_OPERATION_FAILED;
-    }
+            &frame
+        );
 
-    /* CAN frame → Mapping → AP Event */
+    if (result < 0)
+        return AP_ERROR_OPERATION_FAILED;
+
+    if (result > 0)
+        return AP_OK;
+
+    /* Frame vorhanden:
+     * CAN frame → Mapping → AP Event
+     */
 
     return AP_OK;
 }
