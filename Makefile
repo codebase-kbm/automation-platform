@@ -21,12 +21,12 @@ SRC_DIRS := \
     core/src \
     examples/core-test \
     $(wildcard plugins/*) \
-    $(wildcard plugins/*/adapter/linux)
+    $(wildcard adapters/linux/*/)
 
 INC_DIRS := \
     core/include \
-    $(wildcard plugins/*) \
-    $(wildcard plugins/*/adapter/linux) \
+    $(wildcard plugins/*/) \
+    $(wildcard adapters/linux/*/) \
     tools/config-compiler
 
 BUILD_DIR := build

@@ -1,27 +1,26 @@
 # Architecture
 
 ```
-    Automation Core
-                              │
-                         Event Dispatcher
-                              │
-                    +---------+---------+
-                    │                   │
-                  Plugins            Plugins
-                    │                   │
-          Communication              Service
-                    │                   │
-                 Plugin               Plugin
-                    │
-                Adapter
-                    │
-          +---------+---------+
-          │         │         │
-       Protocol   Transport  Platform
+Automation Core
+       │
+       ▼
+    Plugins
+       │
+       ▼
+   Backend API
+       │
+       ▼
+    Adapters
+       │
+       ├── Platform
+       ├── Library
+       ├── Transport
+       └── Hardware
+
 
 The Automation Platform is built around a platform-independent Automation Core.
-
-Plugins extend the Core with functional modules. Adapters provide the concrete protocol, transport or platform-specific implementation required by a Plugin.
+- Plugins extend the Core with functional modules.
+- Adapters provide the concrete transport, platform or hardware-specific implementation required by a Plugin.
 ```
 
 ## Layers
@@ -44,7 +43,8 @@ Responsible for:
 
 The Core is completely protocol and platform agnostic.
 
-The Core does not depend on external communication libraries or operating-system APIs.
+The Core does not depend on external communication libraries or
+operating-system APIs.
 
 ---
 
@@ -58,123 +58,112 @@ A Plugin typically contains:
 - Configuration loading
 - Object and Signal mappings
 - Plugin lifecycle
-- One or more adapters
+- Protocol-specific logic
+- Encoding and decoding
+- Conversion between external data and Core Objects/Events
+
+Plugins use Backend APIs to access platform-specific functionality.
 
 Examples:
 
 - MQTT Plugin
-- SocketCAN Plugin
-- Socket Plugin
-- Logger Plugin
+- CAN Plugin
+- Peer Plugin
 - Timeout Plugin
 
-Plugins may be platform independent while providing platform-specific adapters.
+Plugins may remain platform independent while using platform-specific
+Adapters through their Backend APIs.
 
 ---
 
 ### Adapters
 
-Adapters implement the concrete external interface used by a Plugin.
+Adapters provide the concrete implementation required by a Plugin Backend API.
 
 They are responsible for:
 
-- Protocol handling
 - Transport handling
-- Encoding and decoding
-- Mapping external data to Core Objects
-- Converting external messages into Signal Events
-- Transmitting Core Events to external systems
+- Connection management
+- Flow control
+- Platform-specific communication
+- Hardware interfaces
+- External library integration
 
 Adapters may depend on external libraries or platform APIs.
 
 For example:
 
+```
 MQTT Plugin
     │
-    └── Linux Adapter
+    └── Backend API
             │
-            └── libmosquitto
+            └── Linux Adapter
+                    │
+                    └── libmosquitto
 
 or:
 
-SocketCAN Plugin
+
+CAN Plugin
     │
-    └── Linux Adapter
+    └── Backend API
             │
-            └── Linux SocketCAN API
-
-### Communication Plugins
-
-Communication Plugins exchange data between the Automation Core and external systems.
-
-Examples:
-
-- MQTT
-- CAN / SocketCAN
-- Modbus
-- OpenTherm
-- Crestron ISC
-- TCP / Socket
-
-The communication protocol itself remains outside the Core.
-
-### Service Plugins
-
-Service Plugins consume Core Events for monitoring, logging, storage or analytics.
-
-Examples:
-
-- Syslog
-- InfluxDB
-- Logger
-
-A Service Plugin does not necessarily provide a bidirectional communication channel.
-
+            └── Linux Adapter
+                    │
+                    └── Linux SocketCAN
+```
 
 ### Transport vs Protocol
 
-Automation Platform separates transport and protocol whenever possible.
+The Automation Platform separates transport and protocol whenever
+possible.
 
 Example:
-
 ```
 TCP
- │
- ▼
-ISC Protocol
- │
- ▼
-Signal Events
-```
+│
+▼
+Peer / Application Protocol
+│
+▼
+Plugin
+│
+▼
+Core Objects / Events
 
-or
+or:
 
-```
 SocketCAN
- │
- ▼
-CAN Frame Decoder
- │
- ▼
-Signal Events
+│
+▼
+CAN Plugin
+│
+▼
+Core Objects / Events
 ```
 
-The Core only sees the resulting Objects and Events.
+The transport and platform-specific implementation remain outside the Core.
+
+Protocol interpretation, encoding, decoding and mapping remain inside
+the Plugin.
 
 ### Dependency Boundaries
-```
+
 External dependencies belong to the layer that requires them.
 
 Examples:
-
+```
 Automation Core
     └── no external protocol dependencies
 
 MQTT Plugin
-    └── Linux Adapter
-            └── libmosquitto
+    └── Backend API
+            └── Linux Adapter
+                    └── libmosquitto
 
 Config Compiler
     └── libxml2
 ```
-This keeps the Core portable and allows platform-specific implementations to be replaced without changing the Core architecture.
+This keeps the Core portable and allows platform-specific implementations
+to be replaced without changing the Core architecture.

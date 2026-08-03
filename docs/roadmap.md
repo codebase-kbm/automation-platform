@@ -21,7 +21,7 @@
 
 ---
 
-## Plugins
+## Core - Plugins
 
 ### MQTT
 - [x] MQTT Backend
@@ -35,15 +35,21 @@
 - [ ] Mapping
 
 ### Influx DB Plugin
+- [ ] HTTP Backend
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration
 
-### Socket Plugin
-- [ ] Socket Backend TCP Client/Server
+### Socket Server Plugin
+- [ ] Socket Backend Server
 - [ ] Socket Multi-Instance Handling
 - [ ] Signal Handling
-- [ ] Mapping
+- [ ] Configuration Integration
+
+### Socket Client Plugin
+- [ ] Socket Backend Client
+- [ ] Socket Multi-Instance Handling
+- [ ] Signal Handling
 - [ ] Configuration Integration
 
 ### Supervision Plugin
@@ -77,6 +83,7 @@
 - [ ] Logger Monitoring Tool
 - [ ] Visual Configuration Tool
 - [ ] Embedded Port
+- [ ] Configure Script for Build
  
 ---
  
