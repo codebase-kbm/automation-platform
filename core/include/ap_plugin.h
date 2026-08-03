@@ -27,7 +27,6 @@ typedef struct
 
 } ap_plugin_dependency_t;
 
-
 typedef struct ap_plugin
 {
     ap_module_type_t type;

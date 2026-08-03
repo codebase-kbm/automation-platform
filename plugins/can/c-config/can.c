@@ -223,8 +223,8 @@ static int compile_mapping(xmlNodePtr mapping,ap_plugin_config_buffer_t *buffer)
     }
 
     object_id = get_attribute(mapping,"object_id");
-    direction = get_attribute(mapping,"direction");
     type = get_attribute(mapping,"type");
+    direction = get_attribute(mapping,"direction");
 
     if (object_id == NULL || direction == NULL || type == NULL)
     {
@@ -311,6 +311,7 @@ static int ap_can_config_compile(
     xmlNodePtr module,
     ap_plugin_config_buffer_t *buffer)
 {
+    xmlNodePtr connection;
     xmlNodePtr interface;
     xmlNodePtr mappings;
 
@@ -328,11 +329,18 @@ static int ap_can_config_compile(
         return -1;
     }
 
-    interface = find_child(module, "interface");
+    connection = find_child(module, "connection");
     mappings = find_child(module, "mappings");
 
-    if (interface == NULL ||
+    if (connection == NULL ||
         mappings == NULL)
+    {
+        return -1;
+    }
+
+    interface = find_child(connection, "interface");
+
+    if (interface == NULL)
     {
         return -1;
     }

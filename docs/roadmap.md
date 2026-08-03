@@ -1,4 +1,4 @@
-# Roadmap
+# Functionality Roadmap
 
 ## Core
 
@@ -17,6 +17,7 @@
 - [x] XML Configuration Base
 - [x] Configuration Compiler
 - [x] Config Dump Tool
+- [x] Structural XML for easy editing with XML Editor Tools
 
 ---
 
@@ -33,9 +34,14 @@
 - [x] Configuration Integration
 - [ ] Mapping
 
+### Influx DB Plugin
+- [ ] Signal Handling
+- [ ] Mapping
+- [ ] Configuration Integration
+
 ### Socket Plugin
-- [ ] Socket Backend
-- [ ] Socket Multi-Instance
+- [ ] Socket Backend TCP Client/Server
+- [ ] Socket Multi-Instance Handling
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration
@@ -45,11 +51,7 @@
 - [ ] Configuration Integration
 
 ### System Monitor Plugin
-- [ ] Signal Handling
-- [ ] Mapping
-- [ ] Configuration Integration
-
-### Influx DB Plugin
+- [ ] AP-Core API (read only)
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration
@@ -68,9 +70,13 @@
 ---
 
 ## Platform / Runtime / Tools
+
 - [ ] ARM Testport
+- [ ] Socket Client Library (C-API)
+- [ ] Socket Client Library Wrappers
 - [ ] Logger Monitoring Tool
 - [ ] Visual Configuration Tool
+- [ ] Embedded Port
  
 ---
  

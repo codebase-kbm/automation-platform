@@ -19,7 +19,7 @@
 
 
 static int compile_mapping(
-    xmlNodePtr node,
+    xmlNodePtr mapping,
     ap_plugin_config_buffer_t *buffer)
 {
     xmlChar *topic = NULL;
@@ -37,12 +37,12 @@ static int compile_mapping(
 
     int result = -1;
 
-    topic = get_attribute(node, "topic");
-    object_id = get_attribute(node, "object_id");
-    type = get_attribute(node, "type");
-    direction = get_attribute(node, "direction");
-    qos = get_attribute(node, "qos");
-    retain = get_attribute(node, "retain");
+    object_id = get_attribute(mapping, "object_id");
+    type = get_attribute(mapping, "type");
+    direction = get_attribute(mapping, "direction");
+    topic = get_attribute(mapping, "topic");
+    qos = get_attribute(mapping, "qos");
+    retain = get_attribute(mapping, "retain");
 
     if (topic == NULL ||
         object_id == NULL ||
@@ -52,29 +52,21 @@ static int compile_mapping(
         goto cleanup;
     }
 
-    if (parse_u32(
-            object_id,
-            &object_id_value) != 0)
+    if (parse_u32(object_id,&object_id_value) != 0)
     {
         goto cleanup;
     }
 
-    if (parse_value_type(
-            type,
-            &value_type) != 0)
+    if (parse_value_type(type,&value_type) != 0)
     {
         goto cleanup;
     }
 
-    if (xmlStrcmp(
-            direction,
-            BAD_CAST "publish") == 0)
+    if (xmlStrcmp(direction,BAD_CAST "publish") == 0)
     {
         /* default */
     }
-    else if (xmlStrcmp(
-                 direction,
-                 BAD_CAST "subscribe") == 0)
+    else if (xmlStrcmp(direction,BAD_CAST "subscribe") == 0)
     {
         flags |= AP_MQTT_MAP_FLAG_SUBSCRIBE;
     }
@@ -94,9 +86,7 @@ static int compile_mapping(
 
     if (retain != NULL)
     {
-        if (parse_bool(
-                retain,
-                &retain_value) != 0)
+        if (parse_bool(retain,&retain_value) != 0)
         {
             goto cleanup;
         }
@@ -146,6 +136,7 @@ static int ap_mqtt_config_compile(
     xmlNodePtr module,
     ap_plugin_config_buffer_t *buffer)
 {
+    xmlNodePtr connection;
     xmlNodePtr broker;
     xmlNodePtr auth;
     xmlNodePtr client;
@@ -168,15 +159,22 @@ static int ap_mqtt_config_compile(
         return -1;
     }
 
-    broker = find_child(module, "broker");
-    auth = find_child(module, "auth");
-    client = find_child(module, "client");
+    connection = find_child(module, "connection");
     mappings = find_child(module, "mappings");
+
+    if (connection == NULL ||
+        mappings == NULL)
+    {
+        return -1;
+    }
+
+    broker = find_child(connection, "broker");
+    auth = find_child(connection, "auth");
+    client = find_child(connection, "client");
 
     if (broker == NULL ||
         auth == NULL ||
-        client == NULL ||
-        mappings == NULL)
+        client == NULL)
     {
         return -1;
     }
@@ -199,16 +197,16 @@ static int ap_mqtt_config_compile(
     }
 
     if (parse_u16(port, &port_value) != 0)
-		goto error;
+        goto error;
 
-	buffer->length = 0;
+    buffer->length = 0;
 
-	if (payload_write_u8(
-			buffer,
-			(uint8_t)AP_MODULE_MQTT) != 0 ||
-		payload_write_u8(
-			buffer,
-			AP_MQTT_CONFIG_VERSION) != 0 ||
+    if (payload_write_u8(
+            buffer,
+            (uint8_t)AP_MODULE_MQTT) != 0 ||
+        payload_write_u8(
+            buffer,
+            AP_MQTT_CONFIG_VERSION) != 0 ||
         payload_write_string(
             buffer,
             (const char *)host) != 0 ||

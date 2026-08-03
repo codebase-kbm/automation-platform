@@ -15,9 +15,7 @@ extern const ap_plugin_t * const __stop_ap_plugins[];
 /* Plugin lookup                                      */
 /* -------------------------------------------------- */
 
-const ap_plugin_t *
-ap_plugin_manager_find(
-    ap_module_type_t type)
+const ap_plugin_t * ap_plugin_manager_find(ap_module_type_t type)
 {
     const ap_plugin_t * const *plugin;
 
@@ -39,14 +37,11 @@ ap_plugin_manager_find(
 /* Manager init                                       */
 /* -------------------------------------------------- */
 
-ap_result_t
-ap_plugin_manager_init(void)
+ap_result_t ap_plugin_manager_init(void)
 {
     ap_config_object_t object;
 
-    while (
-        ap_config_reader_next(&object)
-        == AP_OK)
+    while (ap_config_reader_next(&object) == AP_OK)
     {
         if (object.header.object_type != AP_OBJECT_MODULE)
             continue;
@@ -54,29 +49,22 @@ ap_plugin_manager_init(void)
         if (object.payload == NULL)
             return AP_ERROR_INVALID_ARGUMENT;
 
-        ap_module_type_t type =
-            (ap_module_type_t)object.payload[0];
-
-        const ap_plugin_t *plugin =
-            ap_plugin_manager_find(type);
+        ap_module_type_t type = (ap_module_type_t)object.payload[0];
+        const ap_plugin_t *plugin = ap_plugin_manager_find(type);
 
         if (plugin == NULL)
             return AP_ERROR_NOT_FOUND;
 
         if (plugin->load != NULL)
         {
-            ap_result_t result =
-                plugin->load(&object);
-
+            ap_result_t result = plugin->load(&object);
             if (result != AP_OK)
                 return result;
         }
 
         if (plugin->init != NULL)
         {
-            ap_result_t result =
-                plugin->init();
-
+            ap_result_t result = plugin->init();
             if (result != AP_OK)
                 return result;
         }
@@ -90,8 +78,7 @@ ap_plugin_manager_init(void)
 /* Runtime processing                                 */
 /* -------------------------------------------------- */
 
-ap_result_t
-ap_plugin_manager_process(void)
+ap_result_t ap_plugin_manager_process(void)
 {
     const ap_plugin_t * const *plugin;
 
