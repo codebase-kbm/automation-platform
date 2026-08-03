@@ -21,7 +21,25 @@
 
 ---
 
+## Buildsystem
+
+- [ ] Kconfig / `make menuconfig` Build Configuration
+  - [ ] Target Platform selection
+  - [ ] Plugin selection
+  - [ ] Adapter selection
+  - [ ] Build options
+  - [ ] Saved configurations / presets
+  
+---
+
 ## Core - Plugins
+
+### Core-Demo
+- [ ] Signal Handling
+- [ ] Minimal Core Demo Plugin + Example Application
+- [ ] Test Event Generation
+- [ ] Signal Mapping
+- [ ] Console Event Output
 
 ### MQTT
 - [x] MQTT Backend
@@ -40,19 +58,19 @@
 - [ ] Mapping
 - [ ] Configuration Integration
 
-### Socket Server Plugin
-- [ ] Socket Backend Server
-- [ ] Socket Multi-Instance Handling
+### Peer Server Plugin
+- [ ] Peer Backend
+- [ ] Multi-Instance Handling
 - [ ] Signal Handling
 - [ ] Configuration Integration
 
-### Socket Client Plugin
-- [ ] Socket Backend Client
-- [ ] Socket Multi-Instance Handling
+### Peer Client Plugin
+- [ ] Peer Backend
+- [ ] Multi-Instance Handling
 - [ ] Signal Handling
 - [ ] Configuration Integration
 
-### Supervision Plugin
+### Timeout Plugin
 - [ ] Signal Handling
 - [ ] Configuration Integration
 
@@ -68,22 +86,21 @@
 - [ ] Configuration Integration
 
 ### Syslog Plugin
-- [ ] Socket Backend
+- [ ] Backend
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration
 
 ---
-
+  
 ## Platform / Runtime / Tools
-
 - [ ] ARM Testport
-- [ ] Socket Client Library (C-API)
-- [ ] Socket Client Library Wrappers
+- [ ] Peer Client Library (C-API)
+- [ ] Peer Client Library Wrappers
 - [ ] Logger Monitoring Tool
 - [ ] Visual Configuration Tool
 - [ ] Embedded Port
-- [ ] Configure Script for Build
+
  
 ---
  
