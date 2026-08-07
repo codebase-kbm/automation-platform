@@ -37,6 +37,7 @@ ap_result_t ap_dispatcher_register(ap_event_handler_t handler);
  * @param event Event to publish.
  */
 void ap_dispatcher_publish(const ap_event_t *event);
+uint16_t ap_dispatcher_get_EventCount(void);
 
 #ifdef __cplusplus
 }

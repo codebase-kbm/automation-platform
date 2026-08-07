@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 
-#include "ap_module.h"
 #include "ap_result.h"
 #include "ap_config_reader.h"
 
@@ -11,6 +10,21 @@
 extern "C" {
 #endif
 
+typedef enum
+{
+    AP_PLUGIN_NONE = 0,
+
+    #define X(name, string) name,
+    #include "../defs/plugin_types.def"
+    #undef X
+
+    AP_PLUGIN_COUNT
+
+} ap_plugin_type_t;
+
+const char *ap_plugin_type_name(ap_plugin_type_t type);
+
+ap_plugin_type_t ap_plugin_type_from_name(const char *name);
 
 typedef enum
 {
@@ -19,31 +33,25 @@ typedef enum
 
 } ap_plugin_dependency_type_t;
 
-
 typedef struct
 {
-    ap_module_type_t type;
+    ap_plugin_type_t type;
     ap_plugin_dependency_type_t dependency_type;
 
 } ap_plugin_dependency_t;
 
 typedef struct ap_plugin
 {
-    ap_module_type_t type;
+    ap_plugin_type_t type;
 
     const char *name;
 
     const ap_plugin_dependency_t *dependencies;
     size_t dependency_count;
 
-    ap_result_t (*load)(
-        const ap_config_object_t *object
-    );
-
+    ap_result_t (*load)(const ap_config_object_t *object);
     ap_result_t (*init)(void);
-
     ap_result_t (*process)(void);
-
     void (*shutdown)(void);
 
 } ap_plugin_t;

@@ -9,7 +9,7 @@
 
 #include "ap_config.h"
 #include "ap_object.h"
-#include "ap_module.h"
+#include "ap_plugin.h"
 #include "ap_plugin_compiler_manager.h"
 
 
@@ -104,7 +104,7 @@ static uint32_t parse_id(
 }
 
 
-static int compile_module(
+static int compile_plugin(
     FILE *file,
     xmlNodePtr node)
 {
@@ -114,7 +114,7 @@ static int compile_module(
     xmlChar *type =
         xmlGetProp(node, BAD_CAST "type");
 
-    uint32_t module_id =
+    uint32_t plugin_id =
         parse_id(id);
 
     const ap_plugin_compiler_t *plugin =
@@ -126,7 +126,7 @@ static int compile_module(
     {
         fprintf(
             stderr,
-            "ERROR: unknown module type '%s'\n",
+            "ERROR: unknown plugin type '%s'\n",
             type != NULL
                 ? (const char *)type
                 : "(missing)"
@@ -138,25 +138,25 @@ static int compile_module(
         return -1;
     }
 
-    ap_module_type_t module_type =
+    ap_plugin_type_t plugin_type =
         plugin->type;
 
     printf(
         "Module: %u\n"
         "  Type: %s\n"
         "  Type ID: %u\n",
-        module_id,
+        plugin_id,
         type != NULL
             ? (const char *)type
             : "(missing)",
-        module_type
+        plugin_type
     );
 
     if (plugin->compile == NULL)
     {
         fprintf(
             stderr,
-            "ERROR: no config compiler registered for module '%s'\n",
+            "ERROR: no config compiler registered for plugin '%s'\n",
             type != NULL
                 ? (const char *)type
                 : "(missing)"
@@ -181,7 +181,7 @@ static int compile_module(
     {
         fprintf(
             stderr,
-            "ERROR: module configuration compilation failed\n"
+            "ERROR: plugin configuration compilation failed\n"
         );
 
         xmlFree(id);
@@ -193,8 +193,8 @@ static int compile_module(
     int result =
         write_object(
             file,
-            module_id,
-            AP_OBJECT_MODULE,
+            plugin_id,
+            AP_OBJECT_PLUGIN,
             buffer.data,
             buffer.length
         );
@@ -247,9 +247,9 @@ static int compile_node(
 
         if (xmlStrcmp(
                 child->name,
-                BAD_CAST "module") == 0)
+                BAD_CAST "plugin") == 0)
         {
-            if (compile_module(file, child) != 0)
+            if (compile_plugin(file, child) != 0)
                 return -1;
         }
     }

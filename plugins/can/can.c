@@ -1,9 +1,8 @@
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "can.h"
 #include "ap_config_payload_reader.h"
-#include "ap_module.h"
 #include "ap_plugin.h"
 #include "ap_result.h"
 
@@ -117,12 +116,12 @@ static int ap_can_read_mapping(
 /* Plugin lifecycle                                  */
 /* -------------------------------------------------- */
 
-static ap_result_t ap_can_module_load(
+static ap_result_t ap_can_plugin_load(
     const ap_config_object_t *object)
 {
     ap_config_payload_reader_t reader;
 
-    uint8_t module_type;
+    uint8_t plugin_type;
     uint8_t version;
     uint8_t mapping_count;
 
@@ -138,7 +137,7 @@ static ap_result_t ap_can_module_load(
 
     if (ap_config_read_u8(
             &reader,
-            &module_type) != 0 ||
+            &plugin_type) != 0 ||
         ap_config_read_u8(
             &reader,
             &version) != 0)
@@ -146,7 +145,7 @@ static ap_result_t ap_can_module_load(
         return AP_ERROR_INVALID_ARGUMENT;
     }
 
-    if (module_type != AP_MODULE_CAN)
+    if (plugin_type != AP_PLUGIN_CAN)
     {
         return AP_ERROR_INVALID_ARGUMENT;
     }
@@ -219,7 +218,7 @@ static ap_result_t ap_can_module_load(
 static void *can_backend_context;
 
 
-static ap_result_t ap_can_module_init(void)
+static ap_result_t ap_can_plugin_init(void)
 {
     ap_can_backend_config_t config;
 
@@ -244,7 +243,7 @@ static ap_result_t ap_can_module_init(void)
     return AP_OK;
 }
 
-static ap_result_t ap_can_module_process(void)
+static ap_result_t ap_can_plugin_process(void)
 {
     ap_can_frame_t frame;
 
@@ -267,7 +266,7 @@ static ap_result_t ap_can_module_process(void)
     return AP_OK;
 }
 
-static void ap_can_module_shutdown(void)
+static void ap_can_plugin_shutdown(void)
 {
     if (can_backend_context != NULL)
     {
@@ -285,16 +284,16 @@ static void ap_can_module_shutdown(void)
 
 const ap_plugin_t ap_can_plugin =
 {
-    .type = AP_MODULE_CAN,
+    .type = AP_PLUGIN_CAN,
     .name = "can",
 
     .dependencies = NULL,
     .dependency_count = 0,
 
-    .load = ap_can_module_load,
-    .init = ap_can_module_init,
-    .process = ap_can_module_process,
-    .shutdown = ap_can_module_shutdown
+    .load = ap_can_plugin_load,
+    .init = ap_can_plugin_init,
+    .process = ap_can_plugin_process,
+    .shutdown = ap_can_plugin_shutdown
 };
 
 

@@ -9,7 +9,7 @@ extern const ap_plugin_compiler_t * const __stop_ap_plugin_compilers[];
 
 const ap_plugin_compiler_t *
 ap_plugin_compiler_manager_find(
-    ap_module_type_t type)
+    ap_plugin_type_t type)
 {
     const ap_plugin_compiler_t * const *plugin;
 

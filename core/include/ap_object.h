@@ -20,14 +20,14 @@ typedef enum
 {
     AP_OBJECT_SIGNAL,
     AP_OBJECT_NODE,
-    AP_OBJECT_MODULE
+    AP_OBJECT_PLUGIN
 
 } ap_object_type_t;
 
 /**
  * @brief Value types supported by SIGNAL objects.
  *
- * NODE and MODULE objects do not carry runtime values.
+ * NODE and PLUGIN objects do not carry runtime values.
  */
 typedef enum
 {
@@ -54,7 +54,7 @@ typedef struct
     ap_object_type_t object_type;
 
     /** Runtime value type.
-     *  AP_VALUE_NONE for NODE and MODULE objects.
+     *  AP_VALUE_NONE for NODE and PLUGIN objects.
      */
     ap_value_type_t value_type;
 

@@ -7,10 +7,9 @@
 extern "C" {
 #endif
 
+/* Core lifecycle */
 ap_result_t ap_core_init(void);
-
 ap_result_t ap_core_process(void);
-
 void ap_core_shutdown(void);
 
 #ifdef __cplusplus

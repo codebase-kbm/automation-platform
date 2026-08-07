@@ -30,9 +30,6 @@ ap_result_t ap_core_process(void)
     if (!g_core_initialized)
         return AP_ERROR_INVALID_ARGUMENT;
 
-    uint64_t cycle_start =
-        ap_timestamp_now();
-
     /*
      * Currently the dispatcher operates synchronously.
      *
@@ -41,12 +38,6 @@ ap_result_t ap_core_process(void)
      * - scheduled processing
      * - system signals
      */
-
-    uint64_t cycle_end =
-        ap_timestamp_now();
-
-    (void)cycle_start;
-    (void)cycle_end;
 
     return AP_OK;
 }

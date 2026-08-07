@@ -30,7 +30,7 @@ extern "C" {
  */
 
 #define AP_CONFIG_OBJECT_NODE      1u
-#define AP_CONFIG_OBJECT_MODULE    2u
+#define AP_CONFIG_OBJECT_PLUGIN    2u
 
 /**
  * @brief Binary configuration file header.

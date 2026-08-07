@@ -72,6 +72,8 @@
 
 ### Timeout Plugin
 - [ ] Signal Handling
+- [ ] Event Generation on Timeout
+- [ ] Mapping
 - [ ] Configuration Integration
 
 ### System Monitor Plugin
@@ -81,6 +83,7 @@
 - [ ] Configuration Integration
 
 ### Crestron ISC Plugin
+- [ ] Backend
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration

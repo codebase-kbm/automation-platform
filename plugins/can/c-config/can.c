@@ -308,7 +308,7 @@ error:
 }
 
 static int ap_can_config_compile(
-    xmlNodePtr module,
+    xmlNodePtr plugin,
     ap_plugin_config_buffer_t *buffer)
 {
     xmlNodePtr connection;
@@ -322,15 +322,15 @@ static int ap_can_config_compile(
     uint8_t mapping_count = 0;
     size_t mapping_count_offset;
 
-    if (module == NULL ||
+    if (plugin == NULL ||
         buffer == NULL ||
         buffer->data == NULL)
     {
         return -1;
     }
 
-    connection = find_child(module, "connection");
-    mappings = find_child(module, "mappings");
+    connection = find_child(plugin, "connection");
+    mappings = find_child(plugin, "mappings");
 
     if (connection == NULL ||
         mappings == NULL)
@@ -361,7 +361,7 @@ static int ap_can_config_compile(
 
     if (payload_write_u8(
             buffer,
-            (uint8_t)AP_MODULE_CAN) != 0 ||
+            (uint8_t)AP_PLUGIN_CAN) != 0 ||
         payload_write_u8(
             buffer,
             AP_CAN_CONFIG_VERSION) != 0 ||
@@ -431,7 +431,7 @@ error:
 
 static const ap_plugin_compiler_t ap_can_config_plugin =
 {
-    .type = AP_MODULE_CAN,
+    .type = AP_PLUGIN_CAN,
     .name = "can",
     .compile = ap_can_config_compile
 };

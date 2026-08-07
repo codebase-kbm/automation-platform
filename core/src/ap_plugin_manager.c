@@ -5,17 +5,20 @@
 
 #include "ap_config_reader.h"
 #include "ap_object.h"
+#include "ap_plugin.h"
 
 
 extern const ap_plugin_t * const __start_ap_plugins[];
 extern const ap_plugin_t * const __stop_ap_plugins[];
 
+static uint16_t plugin_instances_loaded = 0;
+static uint16_t plugin_types_registered = 0;
 
 /* -------------------------------------------------- */
 /* Plugin lookup                                      */
 /* -------------------------------------------------- */
 
-const ap_plugin_t * ap_plugin_manager_find(ap_module_type_t type)
+const ap_plugin_t * ap_plugin_manager_find(ap_plugin_type_t type)
 {
     const ap_plugin_t * const *plugin;
 
@@ -40,16 +43,18 @@ const ap_plugin_t * ap_plugin_manager_find(ap_module_type_t type)
 ap_result_t ap_plugin_manager_init(void)
 {
     ap_config_object_t object;
+    plugin_types_registered = (uint16_t)(__stop_ap_plugins - __start_ap_plugins);
+    
 
     while (ap_config_reader_next(&object) == AP_OK)
     {
-        if (object.header.object_type != AP_OBJECT_MODULE)
+        if (object.header.object_type != AP_OBJECT_PLUGIN)
             continue;
 
         if (object.payload == NULL)
             return AP_ERROR_INVALID_ARGUMENT;
 
-        ap_module_type_t type = (ap_module_type_t)object.payload[0];
+        ap_plugin_type_t type = (ap_plugin_type_t)object.payload[0];
         const ap_plugin_t *plugin = ap_plugin_manager_find(type);
 
         if (plugin == NULL)
@@ -68,6 +73,7 @@ ap_result_t ap_plugin_manager_init(void)
             if (result != AP_OK)
                 return result;
         }
+            plugin_instances_loaded++;
     }
 
     return AP_OK;
@@ -120,4 +126,14 @@ ap_plugin_manager_shutdown(void)
         if ((*plugin)->shutdown != NULL)
             (*plugin)->shutdown();
     }
+}
+
+uint16_t ap_plugin_manager_get_plugin_types_registered(void)
+{
+    return plugin_types_registered;
+}
+
+uint16_t ap_plugin_manager_get_plugin_instances_loaded(void)
+{
+    return plugin_instances_loaded;
 }

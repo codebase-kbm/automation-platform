@@ -2,10 +2,8 @@
 #define AP_PLUGIN_COMPILER_H
 
 #include <stdint.h>
-
 #include <libxml/tree.h>
-
-#include "ap_module.h"
+#include "ap_plugin.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +27,7 @@ typedef int (*ap_plugin_compile_fn)(
 
 typedef struct
 {
-    ap_module_type_t type;
+    ap_plugin_type_t type;
 
     const char *name;
 

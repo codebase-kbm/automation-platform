@@ -10,7 +10,7 @@ extern "C" {
 
 const ap_plugin_compiler_t *
 ap_plugin_compiler_manager_find(
-    ap_module_type_t type
+    ap_plugin_type_t type
 );
 
 const ap_plugin_compiler_t *

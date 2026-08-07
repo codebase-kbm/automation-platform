@@ -5,6 +5,7 @@
 
 static ap_event_handler_t handlers[AP_MAX_EVENT_HANDLERS];
 static uint32_t handler_count = 0;
+static uint16_t event_count;
 
 void ap_dispatcher_init(void)
 {
@@ -32,5 +33,12 @@ void ap_dispatcher_publish(const ap_event_t *event)
     for (uint32_t i = 0; i < handler_count; i++)
     {
         handlers[i](event);
+        
     }
+    event_count++;
+}
+
+uint16_t ap_dispatcher_get_EventCount(void)
+{
+    return event_count;
 }

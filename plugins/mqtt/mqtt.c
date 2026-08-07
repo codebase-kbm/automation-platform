@@ -8,7 +8,6 @@
 
 #include "mqtt.h"
 #include "ap_config_payload_reader.h"
-#include "ap_module.h"
 #include "ap_plugin.h"
 #include "ap_result.h"
 #include "ap_dispatcher.h"
@@ -289,12 +288,12 @@ static void ap_mqtt_message_callback(
 /* Plugin load                                       */
 /* -------------------------------------------------- */
 
-static ap_result_t ap_mqtt_module_load(
+static ap_result_t ap_mqtt_plugin_load(
     const ap_config_object_t *object)
 {
     ap_config_payload_reader_t reader;
 
-    uint8_t module_type;
+    uint8_t plugin_type;
     uint8_t version;
     uint8_t mapping_count;
 
@@ -310,7 +309,7 @@ static ap_result_t ap_mqtt_module_load(
 
     if (ap_config_read_u8(
             &reader,
-            &module_type) != 0 ||
+            &plugin_type) != 0 ||
         ap_config_read_u8(
             &reader,
             &version) != 0)
@@ -318,7 +317,7 @@ static ap_result_t ap_mqtt_module_load(
         return AP_ERROR_INVALID_ARGUMENT;
     }
 
-    if (module_type != AP_MODULE_MQTT)
+    if (plugin_type != AP_PLUGIN_MQTT)
         return AP_ERROR_INVALID_ARGUMENT;
 
     if (version != AP_MQTT_CONFIG_VERSION)
@@ -414,7 +413,7 @@ static void ap_mqtt_event_handler(
 }
 
 
-static ap_result_t ap_mqtt_module_init(void)
+static ap_result_t ap_mqtt_plugin_init(void)
 {
     ap_mqtt_backend_config_t backend_config;
 
@@ -493,7 +492,7 @@ static ap_result_t ap_mqtt_module_init(void)
 /* Plugin process                                    */
 /* -------------------------------------------------- */
 
-static ap_result_t ap_mqtt_module_process(void)
+static ap_result_t ap_mqtt_plugin_process(void)
 {
     return ap_mqtt_backend.process();
 }
@@ -503,7 +502,7 @@ static ap_result_t ap_mqtt_module_process(void)
 /* Plugin shutdown                                   */
 /* -------------------------------------------------- */
 
-static void ap_mqtt_module_shutdown(void)
+static void ap_mqtt_plugin_shutdown(void)
 {
     ap_mqtt_backend.close();
 
@@ -634,16 +633,16 @@ static ap_result_t ap_mqtt_publish_event(
 
 const ap_plugin_t ap_mqtt_plugin =
 {
-    .type = AP_MODULE_MQTT,
+    .type = AP_PLUGIN_MQTT,
     .name = "mqtt",
 
     .dependencies = NULL,
     .dependency_count = 0,
 
-    .load = ap_mqtt_module_load,
-    .init = ap_mqtt_module_init,
-    .process = ap_mqtt_module_process,
-    .shutdown = ap_mqtt_module_shutdown
+    .load = ap_mqtt_plugin_load,
+    .init = ap_mqtt_plugin_init,
+    .process = ap_mqtt_plugin_process,
+    .shutdown = ap_mqtt_plugin_shutdown
 };
 
 
