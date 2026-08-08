@@ -38,9 +38,14 @@ static void ap_can_config_clear(
 /* -------------------------------------------------- */
 
 static int ap_can_read_mapping(
+
     ap_config_payload_reader_t *reader,
     ap_can_mapping_t *mapping)
 {
+    uint8_t value_type;
+    uint8_t direction;
+    uint8_t mapping_type;
+
     if (reader == NULL ||
         mapping == NULL)
     {
@@ -58,13 +63,13 @@ static int ap_can_read_mapping(
             &mapping->object_id) != 0 ||
         ap_config_read_u8(
             reader,
-            &mapping->signal_type) != 0 ||
+            &value_type) != 0 ||
         ap_config_read_u8(
             reader,
-            (uint8_t *)&mapping->direction) != 0 ||
+            &direction) != 0 ||
         ap_config_read_u8(
             reader,
-            (uint8_t *)&mapping->mapping_type) != 0 ||
+            &mapping_type) != 0 ||
         ap_config_read_u32_le(
             reader,
             &mapping->can_id) != 0 ||
@@ -74,6 +79,15 @@ static int ap_can_read_mapping(
     {
         return -1;
     }
+
+    mapping->value_type =
+        (ap_value_type_t)value_type;
+
+    mapping->direction =
+        (ap_can_direction_t)direction;
+
+    mapping->mapping_type =
+        (ap_can_mapping_type_t)mapping_type;
 
     switch (mapping->mapping_type)
     {
@@ -103,14 +117,98 @@ static int ap_can_read_mapping(
 
             break;
 
+        case AP_CAN_MAPPING_RAW:
+
+            if (ap_config_read_u8(
+                    reader,
+                    &mapping->raw.length) != 0)
+            {
+                return -1;
+            }
+
+            if (mapping->raw.length > sizeof(mapping->raw.data))
+                return -1;
+
+            for (uint8_t i = 0;
+                 i < mapping->raw.length;
+                 i++)
+            {
+                if (ap_config_read_u8(
+                        reader,
+                        &mapping->raw.data[i]) != 0)
+                {
+                    return -1;
+                }
+            }
+
+            break;
+
         default:
 
             return -1;
     }
 
+    /*
+     * Trigger follows the frame payload.
+     */
+    {
+        uint8_t trigger_type;
+
+        if (ap_config_read_u8(
+                reader,
+                &trigger_type) != 0)
+        {
+            return -1;
+        }
+
+        mapping->trigger.type =
+            (ap_can_trigger_type_t)trigger_type;
+
+        switch (mapping->trigger.type)
+        {
+            case AP_CAN_TRIGGER_NONE:
+
+                break;
+
+            case AP_CAN_TRIGGER_VALUE:
+            {
+                uint8_t value;
+
+                if (ap_config_read_u8(
+                        reader,
+                        &value) != 0)
+                {
+                    return -1;
+                }
+
+                if (value > 1)
+                    return -1;
+
+                mapping->trigger.value =
+                    value ? true : false;
+
+                break;
+            }
+
+            case AP_CAN_TRIGGER_OBJECT:
+
+                if (ap_config_read_u32_le(
+                        reader,
+                        &mapping->trigger.object_id) != 0)
+                {
+                    return -1;
+                }
+
+                break;
+
+            default:
+
+                return -1;
+        }
+    }
+
     return 0;
 }
-
 
 /* -------------------------------------------------- */
 /* Plugin lifecycle                                  */

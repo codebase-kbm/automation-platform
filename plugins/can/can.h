@@ -3,13 +3,13 @@
 
 #include <stdbool.h>
 #include "ap_plugin.h"
+#include "ap_object.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define AP_CAN_FIELD_FLAG_SIGNED 0x01u
-
 
 typedef enum
 {
@@ -18,15 +18,12 @@ typedef enum
 
 } ap_can_direction_t;
 
-
 typedef enum
 {
     AP_CAN_MAPPING_FIELD = 0,
-    AP_CAN_MAPPING_BUFFER,
-    AP_CAN_MAPPING_TRIGGER
+    AP_CAN_MAPPING_RAW
 
 } ap_can_mapping_type_t;
-
 
 typedef enum
 {
@@ -36,6 +33,25 @@ typedef enum
 
 } ap_can_encoding_t;
 
+typedef enum
+{
+    AP_CAN_TRIGGER_NONE = 0,
+    AP_CAN_TRIGGER_VALUE,
+    AP_CAN_TRIGGER_OBJECT
+
+} ap_can_trigger_type_t;
+
+typedef struct
+{
+    ap_can_trigger_type_t type;
+
+    union
+    {
+        bool value;
+        uint32_t object_id;
+    };
+
+} ap_can_trigger_t;
 
 typedef struct
 {
@@ -49,28 +65,18 @@ typedef struct
 
 } ap_can_field_t;
 
-
 typedef struct
 {
     uint8_t length;
     uint8_t data[8];
 
-} ap_can_trigger_data_t;
-
-
-typedef struct
-{
-    bool value;
-    ap_can_trigger_data_t data;
-
-} ap_can_trigger_t;
-
+} ap_can_raw_data_t;
 
 typedef struct
 {
     uint32_t object_id;
 
-    uint8_t signal_type;
+    ap_value_type_t value_type;
 
     ap_can_direction_t direction;
     ap_can_mapping_type_t mapping_type;
@@ -78,14 +84,15 @@ typedef struct
     uint32_t can_id;
     uint8_t dlc;
 
+    ap_can_trigger_t trigger;
+
     union
     {
         ap_can_field_t field;
-        ap_can_trigger_t trigger;
+        ap_can_raw_data_t raw;
     };
 
 } ap_can_mapping_t;
-
 
 typedef struct
 {

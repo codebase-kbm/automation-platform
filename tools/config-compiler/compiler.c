@@ -13,6 +13,7 @@
 #include "ap_plugin_compiler_manager.h"
 
 
+
 static int write_u8(
     FILE *file,
     uint8_t value)
@@ -126,7 +127,8 @@ static int compile_plugin(
     {
         fprintf(
             stderr,
-            "ERROR: unknown plugin type '%s'\n",
+            "ERROR: line %ld: unknown plugin type '%s'\n",
+            xmlGetLineNo(node),
             type != NULL
                 ? (const char *)type
                 : "(missing)"
@@ -142,7 +144,7 @@ static int compile_plugin(
         plugin->type;
 
     printf(
-        "Module: %u\n"
+        "Plugin: %u\n"
         "  Type: %s\n"
         "  Type ID: %u\n",
         plugin_id,
@@ -156,7 +158,9 @@ static int compile_plugin(
     {
         fprintf(
             stderr,
-            "ERROR: no config compiler registered for plugin '%s'\n",
+            "ERROR: line %ld: no config compiler "
+            "registered for plugin '%s'\n",
+            xmlGetLineNo(node),
             type != NULL
                 ? (const char *)type
                 : "(missing)"
@@ -181,7 +185,11 @@ static int compile_plugin(
     {
         fprintf(
             stderr,
-            "ERROR: plugin configuration compilation failed\n"
+            "ERROR: plugin configuration compilation "
+            "failed for plugin '%s'\n",
+            type != NULL
+                ? (const char *)type
+                : "(missing)"
         );
 
         xmlFree(id);
@@ -277,11 +285,28 @@ int ap_config_compile(
 
     if (doc == NULL)
     {
-        fprintf(
-            stderr,
-            "ERROR: cannot read '%s'\n",
-            input_file
-        );
+        const xmlError *error =
+            xmlGetLastError();
+
+        if (error != NULL)
+        {
+            fprintf(
+                stderr,
+                "ERROR: %s:%d:%d: XML parse error: %s",
+                input_file,
+                error->line,
+                error->int2,
+                error->message
+            );
+        }
+        else
+        {
+            fprintf(
+                stderr,
+                "ERROR: cannot parse '%s'\n",
+                input_file
+            );
+        }
 
         return 1;
     }
@@ -296,7 +321,12 @@ int ap_config_compile(
     {
         fprintf(
             stderr,
-            "ERROR: root element must be <automation>\n"
+            "ERROR: %s:%ld: root element must be "
+            "<automation>\n",
+            input_file,
+            root != NULL
+                ? xmlGetLineNo(root)
+                : 0L
         );
 
         xmlFreeDoc(doc);

@@ -18,6 +18,10 @@
 - [x] Configuration Compiler
 - [x] Config Dump Tool
 - [x] Structural XML for easy editing with XML Editor Tools
+- [ ] Config Compiler: provide detailed error locations from plugin compilers
+  - [ ] Report the XML line using xmlGetLineNo() on the actual error node
+  - [ ] Provide a specific error message for each plugin
+  - [ ] Keep the central compiler responsible only for propagating the failure
 
 ---
 

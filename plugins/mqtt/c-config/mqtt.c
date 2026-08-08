@@ -283,6 +283,11 @@ error:
 
     buffer->length = 0;
 
+    fprintf(
+        stderr,
+        "ERROR: MQTT config line %ld: invalid\n",
+        xmlGetLineNo(plugin)
+    );
     return -1;
 }
 
