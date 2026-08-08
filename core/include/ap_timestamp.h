@@ -1,7 +1,7 @@
 #ifndef AP_TIMESTAMP_H
 #define AP_TIMESTAMP_H
 
-#include "ap_common.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

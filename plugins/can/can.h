@@ -1,6 +1,7 @@
 #ifndef AP_CAN_PLUGIN_H
 #define AP_CAN_PLUGIN_H
 
+#include <stdbool.h>
 #include "ap_plugin.h"
 
 #ifdef __cplusplus

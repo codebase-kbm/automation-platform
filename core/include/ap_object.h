@@ -1,7 +1,7 @@
 #ifndef AP_OBJECT_H
 #define AP_OBJECT_H
 
-#include "ap_common.h"
+#include <stdbool.h>
 #include "ap_result.h"
 
 #ifdef __cplusplus

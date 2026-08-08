@@ -5,7 +5,7 @@
 
 #include "ap_config_reader.h"
 #include "ap_object.h"
-#include "ap_plugin.h"
+#include "ap_plugin_type.h"
 
 
 extern const ap_plugin_t * const __start_ap_plugins[];
@@ -52,13 +52,13 @@ ap_result_t ap_plugin_manager_init(void)
             continue;
 
         if (object.payload == NULL)
-            return AP_ERROR_INVALID_ARGUMENT;
+            return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_PLUGIN_MANAGER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
 
         ap_plugin_type_t type = (ap_plugin_type_t)object.payload[0];
         const ap_plugin_t *plugin = ap_plugin_manager_find(type);
 
         if (plugin == NULL)
-            return AP_ERROR_NOT_FOUND;
+            return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_PLUGIN_MANAGER,AP_PLUGIN_NONE,AP_ERROR_NOT_FOUND);
 
         if (plugin->load != NULL)
         {

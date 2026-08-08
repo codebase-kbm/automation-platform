@@ -128,7 +128,7 @@ static ap_result_t ap_can_plugin_load(
     if (object == NULL ||
         object->payload == NULL)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
     }
 
     reader.data = object->payload;
@@ -142,17 +142,17 @@ static ap_result_t ap_can_plugin_load(
             &reader,
             &version) != 0)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
     }
 
     if (plugin_type != AP_PLUGIN_CAN)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
     }
 
     if (version != AP_CAN_CONFIG_VERSION)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
     }
 
     ap_can_config_clear(&can_config);
@@ -168,7 +168,7 @@ static ap_result_t ap_can_plugin_load(
             &mapping_count) != 0)
     {
         ap_can_config_clear(&can_config);
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
     }
 
     can_config.mapping_count = mapping_count;
@@ -184,7 +184,7 @@ static ap_result_t ap_can_plugin_load(
         if (can_config.mappings == NULL)
         {
             ap_can_config_clear(&can_config);
-            return AP_ERROR_OUT_OF_MEMORY;
+            return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_MAPPER,AP_PLUGIN_CAN,AP_ERROR_OUT_OF_MEMORY);
         }
 
         for (uint8_t i = 0;
@@ -196,7 +196,7 @@ static ap_result_t ap_can_plugin_load(
                     &can_config.mappings[i]) != 0)
             {
                 ap_can_config_clear(&can_config);
-                return AP_ERROR_INVALID_ARGUMENT;
+                return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_MAPPER,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
             }
         }
     }
@@ -204,7 +204,7 @@ static ap_result_t ap_can_plugin_load(
     if (reader.offset != reader.length)
     {
         ap_can_config_clear(&can_config);
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
     }
 
     return AP_OK;
@@ -228,7 +228,7 @@ static ap_result_t ap_can_plugin_init(void)
     can_backend_context = ap_can_backend.create();
 
     if (can_backend_context == NULL)
-        return AP_ERROR_OUT_OF_MEMORY;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_INIT,AP_PLUGIN_CAN,AP_ERROR_OUT_OF_MEMORY);
 
     if (ap_can_backend.open(
             can_backend_context,
@@ -237,7 +237,7 @@ static ap_result_t ap_can_plugin_init(void)
         ap_can_backend.destroy(can_backend_context);
         can_backend_context = NULL;
 
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_INIT,AP_PLUGIN_CAN,AP_ERROR_INVALID_ARGUMENT);
     }
 
     return AP_OK;
@@ -254,7 +254,7 @@ static ap_result_t ap_can_plugin_process(void)
         );
 
     if (result < 0)
-        return AP_ERROR_OPERATION_FAILED;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_PROCESS,AP_PLUGIN_CAN,AP_ERROR_OPERATION_FAILED);
 
     if (result > 0)
         return AP_OK;

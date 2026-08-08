@@ -4,7 +4,7 @@
 #include "ap_core.h"
 #include "ap_config_reader.h"
 #include "ap_plugin_manager.h"
-#include "ap_result.h"
+#include "result_string.h"
 
 
 int main(int argc, char **argv)

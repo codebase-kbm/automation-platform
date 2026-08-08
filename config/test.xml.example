@@ -1,92 +1,28 @@
 <automation>
 	<node id="1">
-		<module id="500" type="mqtt">
-			<broker host="127.0.0.1" port="1883"/>
-			<auth user="user" password="password"/>
-			<client id="automation-core"/>
+		<plugin id="500" type="mqtt">
+			<connection>
+				<broker host="127.0.0.1" port="1883"/>
+				<auth user="user" password="password"/>
+				<client id="automation-core"/>
 
+			</connection>
 			<mappings>
-				<mapping
-					topic="automation/temperature"
-					object_id="100"
-					type="float"
-					direction="publish"
-					qos="1"
-					retain="true"/>
-
-				<mapping
-					topic="automation/counter"
-					object_id="101"
-					type="int32"
-					direction="publish"/>
-
-				<mapping
-					topic="automation/bool"
-					object_id="102"
-					type="bool"
-					direction="subscribe"/>
-
-				<mapping
-					topic="automation/status"
-					object_id="103"
-					type="string"
-					direction="publish"/>
-
-				<mapping
-					topic="Umwelt/Dachsensor/System/Temperatur"
-					object_id="104"
-					type="float"
-					direction="subscribe"/>
-
-				<mapping
-					topic="automation/Dachboden/Sammelstoerung"
-					object_id="105"
-					type="bool"
-					direction="publish"
-					qos="1"/>
+				<mapping object_id="100" type="float" direction="publish" topic="automation/temperature" qos="1" retain="true"/>
+				<mapping object_id="101" type="int32" direction="publish" topic="automation/counter"/>
+				<mapping object_id="102" type="bool" direction="subscribe" topic="Rauchmelder/Dachboden/Sammelstoerung"/>
+				<mapping object_id="103" type="string" direction="publish" topic="automation/status"/>
+				<mapping object_id="104" type="float" direction="subscribe" topic="Umwelt/Dachsensor/System/Temperatur"/>
+				<mapping object_id="105" type="bool" direction="publish" topic="automation/Dachboden/Sammelstoerung" qos="1"/>
 			</mappings>
-		</module>
-		<module id="501" type="can">
-			<interface name="can0" bitrate="500000"/>
+		</plugin>
+		<plugin id="501" type="can">
+			<connection><interface name="can0" bitrate="50000"/></connection>
 			<mappings>
-				<mapping
-					object_id="110"
-					direction="tx"
-					type="float">
-
-					<frame id="0x003">
-						<field
-							start_bit="8"
-							length="16"
-							encoding="le"
-							scale="0.1"
-							offset="0"/>
-					</frame>
-				</mapping>
-
-				<mapping
-					object_id="112"
-					direction="rx"
-					type="bool">
-					<frame id="0x010">
-						<field
-							start_bit="18"
-							length="1"/>
-					</frame>
-				</mapping>
-				<mapping
-					object_id="111"
-					direction="rx"
-					type="bool">
-
-					<frame id="0x010">
-						<field
-							start_bit="19"
-							length="1"/>
-					</frame>
-				</mapping>
+				<mapping object_id="110" type="float" direction="tx"> <frame id="0x003"> <field start_bit="8" length="16" encoding="le" scale="0.1" offset="0"/> </frame> </mapping>
+				<mapping object_id="112" type="bool" direction="rx"> <frame id="0x010"> <field start_bit="18" length="1"/> </frame> </mapping>
+				<mapping object_id="111" type="bool" direction="rx"> <frame id="0x010"> <field start_bit="19" length="1"/> </frame> </mapping>
 			</mappings>
-		</module>
-		
+		</plugin>
 	</node>
 </automation>

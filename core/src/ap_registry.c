@@ -22,11 +22,11 @@ void ap_registry_init(void)
 ap_result_t ap_registry_register(const ap_object_t *object)
 {
     if (object == NULL)
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_REGISTRY,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
 
     /* Duplicate ID? */
     if (ap_registry_find(object->id) != NULL)
-        return AP_ERROR_ALREADY_EXISTS;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_REGISTRY,AP_PLUGIN_NONE,AP_ERROR_ALREADY_EXISTS);
 
     if (object_count >= object_capacity)
     {
@@ -42,7 +42,7 @@ ap_result_t ap_registry_register(const ap_object_t *object)
             );
 
         if (new_objects == NULL)
-            return AP_ERROR_OUT_OF_MEMORY;
+            return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_REGISTRY,AP_PLUGIN_NONE,AP_ERROR_OUT_OF_MEMORY);
 
         objects = new_objects;
         object_capacity = new_capacity;

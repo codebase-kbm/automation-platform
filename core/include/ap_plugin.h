@@ -2,25 +2,13 @@
 #define AP_PLUGIN_H
 
 #include <stddef.h>
-
-#include "ap_result.h"
 #include "ap_config_reader.h"
+#include "ap_plugin_type.h"
+#include "ap_result.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum
-{
-    AP_PLUGIN_NONE = 0,
-
-    #define X(name, string) name,
-    #include "../defs/plugin_types.def"
-    #undef X
-
-    AP_PLUGIN_COUNT
-
-} ap_plugin_type_t;
 
 const char *ap_plugin_type_name(ap_plugin_type_t type);
 

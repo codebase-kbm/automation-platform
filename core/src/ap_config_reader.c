@@ -31,19 +31,19 @@ ap_result_t ap_config_reader_open(
     const char *filename)
 {
     if (filename == NULL)
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
 
     ap_config_reader_close();
 
     FILE *file = fopen(filename, "rb");
 
     if (file == NULL)
-        return AP_ERROR_NOT_FOUND;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_NOT_FOUND);
 
     if (fseek(file, 0, SEEK_END) != 0)
     {
         fclose(file);
-        return AP_ERROR_OPERATION_FAILED;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_OPERATION_FAILED);
     }
 
     long file_size = ftell(file);
@@ -51,7 +51,7 @@ ap_result_t ap_config_reader_open(
     if (file_size < (long)AP_CONFIG_HEADER_SIZE)
     {
         fclose(file);
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_INVALID_SIZE);
     }
 
     rewind(file);
@@ -62,7 +62,7 @@ ap_result_t ap_config_reader_open(
     if (config_data == NULL)
     {
         fclose(file);
-        return AP_ERROR_OUT_OF_MEMORY;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_OUT_OF_MEMORY);
     }
 
     size_t read_size =
@@ -78,7 +78,7 @@ ap_result_t ap_config_reader_open(
     if (read_size != (size_t)file_size)
     {
         ap_config_reader_close();
-        return AP_ERROR_OPERATION_FAILED;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_OPERATION_FAILED);
     }
 
     config_size = read_size;
@@ -91,29 +91,23 @@ ap_result_t ap_config_reader_open(
      * uint8  version
      */
 
-    uint16_t magic =
-        read_u16_le(
-            config_data
-        );
+    uint16_t magic = read_u16_le(config_data);
 
-    uint8_t version =
-        config_data[2];
+    uint8_t version = config_data[2];
 
     if (magic != AP_CONFIG_MAGIC)
     {
         ap_config_reader_close();
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
     }
 
     if (version != AP_CONFIG_VERSION)
     {
         ap_config_reader_close();
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
     }
 
-    config_offset =
-        AP_CONFIG_HEADER_SIZE;
-
+    config_offset = AP_CONFIG_HEADER_SIZE;
     return AP_OK;
 }
 
@@ -122,7 +116,7 @@ ap_result_t ap_config_reader_next(
     ap_config_object_t *object)
 {
     if (object == NULL)
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
 
     memset(
         object,
@@ -131,18 +125,18 @@ ap_result_t ap_config_reader_next(
     );
 
     if (config_data == NULL)
-        return AP_ERROR_NOT_INITIALIZED;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_NOT_INITIALIZED);
 
     /*
      * No complete object header remaining.
      */
     if (config_offset >= config_size)
-        return AP_ERROR_NOT_FOUND;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_NOT_FOUND);
 
     if (config_size - config_offset <
         AP_CONFIG_OBJECT_HEADER_SIZE)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
     }
 
 	const uint8_t *header =
@@ -167,7 +161,7 @@ ap_result_t ap_config_reader_next(
         object->header.payload_length)
     {
         ap_config_reader_close();
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
     }
 
     object->payload =

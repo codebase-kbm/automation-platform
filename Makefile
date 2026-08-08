@@ -14,17 +14,18 @@ CONFIG_CORE_SRC := \
     core/src/ap_dispatcher.c \
     core/src/ap_event.c \
     core/src/ap_registry.c \
-    core/src/ap_result.c \
     core/src/ap_timestamp.c
 	
 SRC_DIRS := \
     core/src \
-    examples/core-test \
+    examples/linux/ap-runner \
+    examples/linux/common \
     $(wildcard plugins/*) \
     $(wildcard adapters/linux/*/)
 
 INC_DIRS := \
     core/include \
+    examples/linux/common \
     $(wildcard plugins/*/) \
     $(wildcard adapters/linux/*/) \
     tools/config-compiler
@@ -74,12 +75,12 @@ CONFIG_LIBS := $(shell pkg-config --libs libxml-2.0)
 # --------------------------------------------------
 
 PLUGIN_TEST_SRC := \
-    examples/dummy-plugin/main.c \
+    examples/demo-plugin/main.c \
     core/src/ap_plugin_manager.c \
     core/src/ap_config_reader.c \
-    plugins/dummy/dummy_plugin.c
+    plugins/demo/demo_plugin.c
 
-PLUGIN_TEST := $(BUILD_DIR)/dummy-plugin
+PLUGIN_TEST := $(BUILD_DIR)/demo-plugin
 
 
 $(PLUGIN_TEST): $(PLUGIN_TEST_SRC)
@@ -154,4 +155,4 @@ run: all
 	./$(BUILD_DIR)/$(TARGET)
 
 
-.PHONY: all clean rebuild run config config-dump config-compiler dummy-plugin
+.PHONY: all clean rebuild run config config-dump config-compiler demo-plugin

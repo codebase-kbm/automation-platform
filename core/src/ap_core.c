@@ -12,7 +12,7 @@ static uint64_t g_core_start_time = 0;
 ap_result_t ap_core_init(void)
 {
     if (g_core_initialized)
-        return AP_ERROR_ALREADY_EXISTS;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_NONE,AP_PLUGIN_NONE,AP_ERROR_ALREADY_EXISTS);
 
     ap_timestamp_init();
     ap_dispatcher_init();
@@ -28,7 +28,7 @@ ap_result_t ap_core_init(void)
 ap_result_t ap_core_process(void)
 {
     if (!g_core_initialized)
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_NONE,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
 
     /*
      * Currently the dispatcher operates synchronously.

@@ -15,10 +15,10 @@ void ap_dispatcher_init(void)
 ap_result_t ap_dispatcher_register(ap_event_handler_t handler)
 {
     if (handler == NULL)
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_DISPATCHER,AP_PLUGIN_NONE,AP_ERROR_INVALID_ARGUMENT);
 
     if (handler_count >= AP_MAX_EVENT_HANDLERS)
-        return AP_ERROR_FULL;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_CORE,AP_COMPONENT_DISPATCHER,AP_PLUGIN_NONE,AP_ERROR_FULL);
 
     handlers[handler_count++] = handler;
 

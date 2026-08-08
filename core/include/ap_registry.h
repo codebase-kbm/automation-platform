@@ -1,7 +1,6 @@
 #ifndef AP_REGISTRY_H
 #define AP_REGISTRY_H
 
-#include "ap_common.h"
 #include "ap_object.h"
 #include "ap_result.h"
 

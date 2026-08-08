@@ -300,7 +300,7 @@ static ap_result_t ap_mqtt_plugin_load(
     if (object == NULL ||
         object->payload == NULL)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
     }
 
     reader.data = object->payload;
@@ -314,14 +314,14 @@ static ap_result_t ap_mqtt_plugin_load(
             &reader,
             &version) != 0)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
     }
 
     if (plugin_type != AP_PLUGIN_MQTT)
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
 
     if (version != AP_MQTT_CONFIG_VERSION)
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
 
     ap_mqtt_config_clear(
         &mqtt_config
@@ -350,7 +350,7 @@ static ap_result_t ap_mqtt_plugin_load(
             &mqtt_config
         );
 
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
     }
 
     mqtt_config.mapping_count = mapping_count;
@@ -369,7 +369,7 @@ static ap_result_t ap_mqtt_plugin_load(
                 &mqtt_config
             );
 
-            return AP_ERROR_OUT_OF_MEMORY;
+            return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_OUT_OF_MEMORY);
         }
 
         for (uint8_t i = 0;
@@ -395,7 +395,7 @@ static ap_result_t ap_mqtt_plugin_load(
             &mqtt_config
         );
 
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
     }
 
     return AP_OK;
@@ -522,14 +522,13 @@ static ap_result_t ap_mqtt_publish_event(
     if (event == NULL ||
         event->object == NULL)
     {
-        return AP_ERROR_INVALID_ARGUMENT;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_EVENT_PUBLISHER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
     }
 
-    const ap_object_t *object =
-        event->object;
+    const ap_object_t *object = event->object;
 
     if (object->object_type != AP_OBJECT_SIGNAL)
-        return AP_ERROR_INVALID_TYPE;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_EVENT_PUBLISHER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_TYPE);
 
     const ap_mqtt_mapping_t *mapping =
         ap_mqtt_find_mapping_by_object(
@@ -537,12 +536,12 @@ static ap_result_t ap_mqtt_publish_event(
         );
 
     if (mapping == NULL)
-        return AP_ERROR_NOT_FOUND;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_MAPPER,AP_PLUGIN_MQTT,AP_ERROR_NOT_FOUND);
 
     if (mapping->flags &
         AP_MQTT_MAP_FLAG_SUBSCRIBE)
     {
-        return AP_ERROR_NOT_SUPPORTED;
+        return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_MAPPER,AP_PLUGIN_MQTT,AP_ERROR_NOT_SUPPORTED);
     }
 
     char payload[256];

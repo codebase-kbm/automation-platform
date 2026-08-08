@@ -1,8 +1,0 @@
-X(AP_PLUGIN_DEMO,           "demo")
-X(AP_PLUGIN_SYSTEM,         "system")
-X(AP_PLUGIN_MQTT,           "mqtt")
-X(AP_PLUGIN_CAN,            "can")
-X(AP_PLUGIN_INFLUX,         "influx")
-X(AP_PLUGIN_PEER_SERVER,    "peer_server")
-X(AP_PLUGIN_PEER_CLIENT,    "peer_client")
-X(AP_PLUGIN_TIMEOUT,        "timeout")
