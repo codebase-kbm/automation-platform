@@ -6,6 +6,8 @@
 #include "ap_plugin.h"
 #include "ap_result.h"
 
+#include "can_mapping.h"
+
 
 #define AP_CAN_CONFIG_VERSION 1u
 
@@ -360,6 +362,7 @@ static ap_result_t ap_can_plugin_process(void)
     /* Frame vorhanden:
      * CAN frame → Mapping → AP Event
      */
+    ap_can_mapping_rx(&frame,&can_config);
 
     return AP_OK;
 }

@@ -22,12 +22,26 @@ void ap_registry_init(void);
 ap_result_t ap_registry_register(const ap_object_t *object);
 
 /**
- * @brief Find an object by its ID.
+ * @brief Get an object by its ID.
  *
  * @param id Object identifier.
  * @return Pointer to the registered object, or NULL if not found.
  */
-const ap_object_t *ap_registry_find(ap_object_id_t id);
+const ap_object_t *ap_registry_get(ap_object_id_t id);
+
+/**
+ * @brief Get an object by its ID or create and register it.
+ *
+ * If the object already exists, its value type must match.
+ * If it does not exist, a new object is created and registered.
+ *
+ * @param id Object identifier.
+ * @param value_type Required object value type.
+ * @param object Receives a pointer to the registered object.
+ *
+ * @return AP_OK on success or an appropriate error code.
+ */
+ap_result_t ap_registry_get_or_create(ap_object_id_t id,ap_value_type_t value_type,const ap_object_t **object);
 
 #ifdef __cplusplus
 }

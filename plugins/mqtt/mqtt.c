@@ -195,7 +195,7 @@ static void ap_mqtt_message_callback(
     }
 
     const ap_object_t *object =
-        ap_registry_find(
+        ap_registry_get(
             mapping->object_id
         );
 
@@ -323,9 +323,7 @@ static ap_result_t ap_mqtt_plugin_load(
     if (version != AP_MQTT_CONFIG_VERSION)
         return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
 
-    ap_mqtt_config_clear(
-        &mqtt_config
-    );
+    ap_mqtt_config_clear(&mqtt_config);
 
     if (ap_config_read_string(
             &reader,
@@ -346,9 +344,7 @@ static ap_result_t ap_mqtt_plugin_load(
             &reader,
             &mapping_count) != 0)
     {
-        ap_mqtt_config_clear(
-            &mqtt_config
-        );
+        ap_mqtt_config_clear(&mqtt_config);
 
         return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
     }
@@ -365,26 +361,35 @@ static ap_result_t ap_mqtt_plugin_load(
 
         if (mqtt_config.mappings == NULL)
         {
-            ap_mqtt_config_clear(
-                &mqtt_config
-            );
+            ap_mqtt_config_clear(&mqtt_config);
 
             return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_OUT_OF_MEMORY);
         }
 
-        for (uint8_t i = 0;
-             i < mapping_count;
-             i++)
+        for (uint8_t i = 0; i < mapping_count; i++)
         {
             if (ap_mqtt_read_mapping(
                     &reader,
                     &mqtt_config.mappings[i]) != 0)
             {
-                ap_mqtt_config_clear(
-                    &mqtt_config
+                ap_mqtt_config_clear(&mqtt_config);
+                return AP_ERROR_INVALID_ARGUMENT;
+            }
+
+            const ap_object_t *object;
+
+            ap_result_t result =
+                ap_registry_get_or_create(
+                    mqtt_config.mappings[i].object_id,
+                    mqtt_config.mappings[i].value_type,
+                    &object
                 );
 
-                return AP_ERROR_INVALID_ARGUMENT;
+            if (result != AP_OK)
+            {
+                ap_mqtt_config_clear(&mqtt_config);
+
+                return result;
             }
         }
     }
