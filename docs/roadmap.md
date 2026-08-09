@@ -22,6 +22,7 @@
   - [ ] Report the XML line using xmlGetLineNo() on the actual error node
   - [ ] Provide a specific error message for each plugin
   - [ ] Keep the central compiler responsible only for propagating the failure
+  - [ ] More tolerance about empty Settings if not required
 
 ---
 
@@ -55,6 +56,12 @@
 - [x] CAN Backend
 - [x] Configuration Integration
 - [ ] Mapping
+ - [x] RX Mapping with LE / Bitdecoding
+ - [x] RX Mapping with BE
+ - [ ] TX Mapping
+ - [ ] TX Bool Trigger by Object
+ - [ ] TX Frame Trigger by Object
+
 
 ### Influx DB Plugin
 - [ ] HTTP Backend
@@ -65,29 +72,30 @@
 ### Peer Server Plugin
 - [ ] Peer Backend
 - [ ] Multi-Instance Handling
-- [ ] Signal Handling
+- [ ] Signal Handling/Mapping
 - [ ] Configuration Integration
 
 ### Peer Client Plugin
 - [ ] Peer Backend
 - [ ] Multi-Instance Handling
-- [ ] Signal Handling
+- [ ] Signal Handling/Mapping
 - [ ] Configuration Integration
 
 ### Timeout Plugin
 - [ ] Signal Handling
 - [ ] Event Generation on Timeout
-- [ ] Mapping
+- [ ] Mapping for Events
 - [ ] Configuration Integration
 
 ### System Monitor Plugin
 - [ ] AP-Core API (read only)
 - [ ] Signal Handling
-- [ ] Mapping
+- [ ] Mapping for Events
 - [ ] Configuration Integration
 
 ### Crestron ISC Plugin
-- [ ] Backend
+- [ ] Backend TCP
+- [ ] Backend SERIAL
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration
@@ -101,7 +109,7 @@
 ---
   
 ## Platform / Runtime / Tools
-- [ ] ARM Testport
+- [x] ARM Testport (continuous Test for Long-Time-Stability)
 - [ ] Peer Client Library (C-API)
 - [ ] Peer Client Library Wrappers
 - [ ] Logger Monitoring Tool

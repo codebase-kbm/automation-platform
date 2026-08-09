@@ -29,47 +29,95 @@ static ap_result_t can_decode_field(
 
     field = &mapping->field;
 
-    /*
-     * Currently decode little-endian bit fields.
-     */
-    if (field->encoding != AP_CAN_ENCODING_NONE &&
-        field->encoding != AP_CAN_ENCODING_LE)
+    if (field->length == 0 ||
+        field->length > 64)
     {
         return AP_RESULT_MAKE(
             AP_RESULT_SOURCE_PLUGIN,
             AP_COMPONENT_PROCESS,
             AP_PLUGIN_CAN,
-            AP_ERROR_OPERATION_FAILED
+            AP_ERROR_DECODING
         );
     }
 
-    for (uint8_t i = 0;
-         i < field->length;
-         i++)
+    /*
+     * Little-endian / default bit field.
+     */
+    if (field->encoding == AP_CAN_ENCODING_NONE ||
+        field->encoding == AP_CAN_ENCODING_LE)
     {
-        uint8_t bit =
-            field->start_bit + i;
+        for (uint8_t i = 0; i < field->length; i++)
+        {
+            uint8_t bit = field->start_bit + i;
+            uint8_t byte = bit / 8;
+            uint8_t bit_offset = bit % 8;
 
-        uint8_t byte =
-            bit / 8;
+            if (byte >= frame->dlc)
+            {
+                return AP_RESULT_MAKE(
+                    AP_RESULT_SOURCE_PLUGIN,
+                    AP_COMPONENT_PROCESS,
+                    AP_PLUGIN_CAN,
+                    AP_ERROR_DECODING
+                );
+            }
 
-        uint8_t bit_offset =
-            bit % 8;
+            if (frame->data[byte] & (1u << bit_offset))
+            {
+                raw |= (uint64_t)1 << i;
+            }
+        }
+    }
 
-        if (byte >= frame->dlc)
+    /*
+     * Big-endian byte field.
+     *
+     * Currently only byte-aligned fields are supported.
+     */
+    else if (field->encoding == AP_CAN_ENCODING_BE)
+    {
+        if ((field->start_bit % 8) != 0 ||
+            (field->length % 8) != 0)
+        {
             return AP_RESULT_MAKE(
                 AP_RESULT_SOURCE_PLUGIN,
                 AP_COMPONENT_PROCESS,
                 AP_PLUGIN_CAN,
-                AP_ERROR_INVALID_ARGUMENT
+                AP_ERROR_ENCODING
             );
-
-        if (frame->data[byte] &
-            (1u << bit_offset))
-        {
-            raw |=
-                (uint64_t)1 << i;
         }
+
+        uint8_t start_byte = field->start_bit / 8;
+        uint8_t byte_count = field->length / 8;
+
+        if ((uint16_t)start_byte + byte_count > frame->dlc)
+        {
+            return AP_RESULT_MAKE(
+                AP_RESULT_SOURCE_PLUGIN,
+                AP_COMPONENT_PROCESS,
+                AP_PLUGIN_CAN,
+                AP_ERROR_DECODING
+            );
+        }
+
+        for (uint8_t i = 0;
+             i < byte_count;
+             i++)
+        {
+            raw <<= 8;
+
+            raw |=
+                frame->data[start_byte + i];
+        }
+    }
+    else
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_PROCESS,
+            AP_PLUGIN_CAN,
+            AP_ERROR_ENCODING
+        );
     }
 
     switch (mapping->value_type)
