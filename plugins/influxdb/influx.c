@@ -456,7 +456,7 @@ static ap_result_t ap_influx_event_handler(
             AP_RESULT_SOURCE_PLUGIN,
             AP_COMPONENT_DISPATCHER,
             AP_PLUGIN_INFLUX,
-            AP_ERROR_OPERATION_FAILED);
+            AP_ERROR_NOT_FOUND);
     }
 
     if (event->object->object_type != AP_OBJECT_SIGNAL)
@@ -464,7 +464,7 @@ static ap_result_t ap_influx_event_handler(
             AP_RESULT_SOURCE_PLUGIN,
             AP_COMPONENT_DISPATCHER,
             AP_PLUGIN_INFLUX,
-            AP_ERROR_OPERATION_FAILED);
+            AP_ERROR_TYPE_MISMATCH);
 
     const ap_influx_mapping_t *mapping =
         ap_influx_find_mapping(
@@ -476,7 +476,7 @@ static ap_result_t ap_influx_event_handler(
             AP_RESULT_SOURCE_PLUGIN,
             AP_COMPONENT_DISPATCHER,
             AP_PLUGIN_INFLUX,
-            AP_ERROR_OPERATION_FAILED);
+            AP_ERROR_MAPPING_FAILED);
 
     if (ap_influx_build_line(
             event,
@@ -531,7 +531,7 @@ static ap_result_t ap_influx_event_handler(
             AP_RESULT_SOURCE_PLUGIN,
             AP_COMPONENT_DISPATCHER,
             AP_PLUGIN_INFLUX,
-            AP_ERROR_OPERATION_FAILED);
+            AP_ERROR_AUTHENTICATION);
     }
 
     const ap_http_header_t headers[] =
@@ -574,7 +574,7 @@ static ap_result_t ap_influx_event_handler(
             AP_RESULT_SOURCE_PLUGIN,
             AP_COMPONENT_DISPATCHER,
             AP_PLUGIN_INFLUX,
-            AP_ERROR_OPERATION_FAILED
+            AP_ERROR_BACKEND_FAILED
         );
 
     ap_http_backend.response_free(
