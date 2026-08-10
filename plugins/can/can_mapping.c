@@ -76,8 +76,7 @@ static ap_result_t can_decode_field(
      */
     else if (field->encoding == AP_CAN_ENCODING_BE)
     {
-        if ((field->start_bit % 8) != 0 ||
-            (field->length % 8) != 0)
+        if ((field->start_bit % 8) != 0 || (field->length % 8) != 0)
         {
             return AP_RESULT_MAKE(
                 AP_RESULT_SOURCE_PLUGIN,

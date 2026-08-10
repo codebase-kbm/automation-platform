@@ -26,6 +26,7 @@ SRC_DIRS := \
 INC_DIRS := \
     core/include \
     examples/linux/common \
+    adapters/api \
     $(wildcard plugins/*/) \
     $(wildcard adapters/linux/*/) \
     tools/config-compiler
@@ -42,7 +43,7 @@ CFLAGS := -std=c11 \
           $(addprefix -I,$(INC_DIRS))
 
 # Linker
-LDFLAGS := -lmosquitto -lcjson
+LDFLAGS := -lmosquitto -lcjson -lcurl
 
 # Quellen automatisch finden
 SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))

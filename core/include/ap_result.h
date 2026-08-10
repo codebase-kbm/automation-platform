@@ -26,6 +26,7 @@ typedef uint32_t ap_result_t;
 /* Result source */
 #define AP_RESULT_SOURCE_CORE    0x0u
 #define AP_RESULT_SOURCE_PLUGIN  0x1u
+#define AP_RESULT_SOURCE_ADAPTER 0x2u
 
 /* Bit positions */
 #define AP_RESULT_ERROR_SHIFT     0u
