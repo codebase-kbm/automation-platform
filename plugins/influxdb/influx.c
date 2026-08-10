@@ -450,7 +450,7 @@ static ap_result_t ap_influx_event_handler(
     char line[512];
 
     if (event == NULL) return AP_OK;
-    if (event->object == NULL);
+    if (event->object == NULL)
     {
         return AP_RESULT_MAKE(
             AP_RESULT_SOURCE_PLUGIN,
