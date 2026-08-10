@@ -472,11 +472,7 @@ static ap_result_t ap_influx_event_handler(
         );
 
     if (mapping == NULL)
-        return AP_RESULT_MAKE(
-            AP_RESULT_SOURCE_PLUGIN,
-            AP_COMPONENT_DISPATCHER,
-            AP_PLUGIN_INFLUX,
-            AP_ERROR_MAPPING_FAILED);
+        return AP_OK;
 
     if (ap_influx_build_line(
             event,
@@ -488,7 +484,7 @@ static ap_result_t ap_influx_event_handler(
             AP_RESULT_SOURCE_PLUGIN,
             AP_COMPONENT_DISPATCHER,
             AP_PLUGIN_INFLUX,
-            AP_ERROR_OPERATION_FAILED);
+            AP_ERROR_MAPPING_FAILED);
     }
 
     char url[1024];
