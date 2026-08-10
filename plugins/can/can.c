@@ -347,11 +347,7 @@ static ap_result_t ap_can_plugin_process(void)
 {
     ap_can_frame_t frame;
 
-    int result =
-        ap_can_backend.receive(
-            can_backend_context,
-            &frame
-        );
+    int result = ap_can_backend.receive(can_backend_context,&frame);
 
     if (result < 0)
         return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_PROCESS,AP_PLUGIN_CAN,AP_ERROR_OPERATION_FAILED);
@@ -362,8 +358,12 @@ static ap_result_t ap_can_plugin_process(void)
     /* Frame vorhanden:
      * CAN frame → Mapping → AP Event
      */
-    ap_can_mapping_rx(&frame,&can_config);
+    result = ap_can_mapping_rx(&frame, &can_config);
 
+    if (result != AP_OK)
+    {
+        return result;
+    }
     return AP_OK;
 }
 
