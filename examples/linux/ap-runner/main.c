@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <time.h>
+#include <inttypes.h>
 
 #include "ap_core.h"
 #include "ap_config_reader.h"
@@ -7,10 +8,11 @@
 #include "ap_dispatcher.h"
 #include "result_string.h"
 
-static void ap_result_handler(ap_result_t result,void *context)
+static void ap_result_handler(ap_result_t result,const ap_event_t *event,void *context)
 {
     (void)context;
-    printf("%s\n",ap_result_string(result));
+    
+    printf("%" PRIu64 ": Object: %u failed: %s\n",event->timestamp,event->object->id,ap_result_string(result));
 }
 
 int main(int argc, char **argv)

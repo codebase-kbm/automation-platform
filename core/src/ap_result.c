@@ -35,11 +35,15 @@ ap_result_t ap_result_register_handler(
 }
 
 
-ap_result_t ap_result_report(ap_result_t result)
+ap_result_t ap_result_report(ap_result_t result, const ap_event_t *event)
 {
     for (uint8_t i = 0; i < handler_count; i++) {
         if (handlers[i].handler != NULL) {
-            handlers[i].handler(result, handlers[i].context);
+            handlers[i].handler(
+                result,
+                event,
+                handlers[i].context
+            );
         }
     }
 

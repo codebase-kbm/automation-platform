@@ -237,7 +237,7 @@ ap_result_t ap_can_mapping_rx(
             continue;
         }
 
-        ap_result_report(ap_dispatcher_publish(&event));
+        ap_result_report(ap_dispatcher_publish(&event),&event);
     }
 
     return AP_OK;

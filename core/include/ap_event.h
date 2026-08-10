@@ -37,7 +37,7 @@ typedef enum
 /**
  * @brief Runtime event.
  */
-typedef struct
+typedef struct ap_event
 {
     /** Object definition */
     const ap_object_t *object;
