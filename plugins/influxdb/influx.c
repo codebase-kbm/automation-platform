@@ -313,6 +313,47 @@ static ap_result_t ap_influx_plugin_load(
 /* -------------------------------------------------- */
 /* Line protocol                                      */
 /* -------------------------------------------------- */
+static int ap_influx_escape_measurement(
+    const char *source,
+    char *buffer,
+    size_t buffer_size)
+{
+    size_t offset = 0;
+
+    if (source == NULL ||
+        buffer == NULL ||
+        buffer_size == 0)
+    {
+        return -1;
+    }
+
+    for (const char *p = source;
+         *p != '\0';
+         p++)
+    {
+        if (*p == ' ' ||
+            *p == ',' ||
+            *p == '=' ||
+            *p == '\\')
+        {
+            if (offset + 2 >= buffer_size)
+                return -1;
+
+            buffer[offset++] = '\\';
+        }
+        else
+        {
+            if (offset + 1 >= buffer_size)
+                return -1;
+        }
+
+        buffer[offset++] = *p;
+    }
+
+    buffer[offset] = '\0';
+
+    return 0;
+}
 
 static int ap_influx_build_line(
     const ap_event_t *event,
@@ -320,6 +361,7 @@ static int ap_influx_build_line(
     char *buffer,
     size_t buffer_size)
 {
+    char measurement[256];
     int length;
 
     if (event == NULL ||
@@ -328,6 +370,14 @@ static int ap_influx_build_line(
         mapping->name == NULL ||
         buffer == NULL ||
         buffer_size == 0)
+    {
+        return -1;
+    }
+
+    if (ap_influx_escape_measurement(
+            mapping->name,
+            measurement,
+            sizeof(measurement)) != 0)
     {
         return -1;
     }
@@ -341,14 +391,13 @@ static int ap_influx_build_line(
                     buffer,
                     buffer_size,
                     "%s value=%s",
-                    mapping->name,
+                    measurement,
                     event->value.b
                         ? "true"
                         : "false"
                 );
 
             break;
-
 
         case AP_VALUE_INT32:
 
@@ -357,12 +406,11 @@ static int ap_influx_build_line(
                     buffer,
                     buffer_size,
                     "%s value=%" PRId32 "i",
-                    mapping->name,
+                    measurement,
                     event->value.i
                 );
 
             break;
-
 
         case AP_VALUE_FLOAT:
 
@@ -371,12 +419,11 @@ static int ap_influx_build_line(
                     buffer,
                     buffer_size,
                     "%s value=%.6f",
-                    mapping->name,
+                    measurement,
                     event->value.f
                 );
 
             break;
-
 
         default:
 

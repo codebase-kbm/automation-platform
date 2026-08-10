@@ -42,3 +42,8 @@ uint16_t ap_dispatcher_get_EventCount(void)
 {
     return event_count;
 }
+
+uint32_t ap_dispatcher_get_HandlerCount(void)
+{
+    return handler_count;
+}

@@ -4,6 +4,7 @@
 #include "ap_core.h"
 #include "ap_config_reader.h"
 #include "ap_plugin_manager.h"
+#include "ap_dispatcher.h"
 #include "result_string.h"
 
 
@@ -57,9 +58,11 @@ int main(int argc, char **argv)
     }
 
     printf("Plugins initialized successfully.\n");
-
+    printf("Registred Handlers in Dispatcher: %u\n",ap_dispatcher_get_HandlerCount());
+    
     while (1)
     {
+        
         /*
          * Process plugin backends first.
          *

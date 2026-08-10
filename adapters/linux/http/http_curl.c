@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdio.h>
 #include <curl/curl.h>
 
 #include "http.h"
@@ -477,11 +477,18 @@ static ap_result_t ap_http_curl_request(
             goto error;
     }
 
-    CURLcode result =
-        curl_easy_perform(curl);
+    CURLcode result = curl_easy_perform(curl);
 
     if (result != CURLE_OK)
+    {
+        fprintf(
+            stderr,
+            "AP_HTTP: curl error: %s\n",
+            curl_easy_strerror(result)
+        );
+
         goto error;
+    }
 
     long status_code = 0;
 
@@ -491,6 +498,26 @@ static ap_result_t ap_http_curl_request(
             &status_code) != CURLE_OK)
     {
         goto error;
+    }
+
+    if (status_code != 204)
+    {
+        fprintf(
+            stderr,
+            "AP_HTTP: HTTP status: %ld\n",
+            status_code
+        );
+
+        if (buffer.data != NULL &&
+            buffer.length > 0)
+        {
+            fprintf(
+                stderr,
+                "AP_HTTP: response: %.*s\n",
+                (int)buffer.length,
+                (const char *)buffer.data
+            );
+        }
     }
 
     response->status_code =

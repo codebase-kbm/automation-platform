@@ -23,6 +23,7 @@
   - [ ] Provide a specific error message for each plugin
   - [ ] Keep the central compiler responsible only for propagating the failure
   - [ ] More tolerance about empty Settings if not required
+- [ ] Configuration Dokumentation
 
 ---
 
@@ -51,6 +52,7 @@
 - [x] Signal Handling
 - [x] Mapping
 - [x] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ### CAN Plugin
 - [x] CAN Backend
@@ -61,37 +63,43 @@
  - [ ] TX Mapping
  - [ ] TX Bool Trigger by Object
  - [ ] TX Frame Trigger by Object
+- [ ] Configuration Dokumentation
 
 
 ### Influx DB Plugin
-- [ ] HTTP Backend
-- [ ] Signal Handling
-- [ ] Mapping
-- [ ] Configuration Integration
+- [x] HTTP Backend
+- [x] Signal Handling
+- [x] Mapping
+- [x] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ### Peer Server Plugin
 - [ ] Peer Backend
 - [ ] Multi-Instance Handling
 - [ ] Signal Handling/Mapping
 - [ ] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ### Peer Client Plugin
 - [ ] Peer Backend
 - [ ] Multi-Instance Handling
 - [ ] Signal Handling/Mapping
 - [ ] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ### Timeout Plugin
 - [ ] Signal Handling
 - [ ] Event Generation on Timeout
 - [ ] Mapping for Events
 - [ ] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ### System Monitor Plugin
 - [ ] AP-Core API (read only)
 - [ ] Signal Handling
 - [ ] Mapping for Events
 - [ ] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ### Crestron ISC Plugin
 - [ ] Backend TCP
@@ -99,12 +107,14 @@
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ### Syslog Plugin
 - [ ] Backend
 - [ ] Signal Handling
 - [ ] Mapping
 - [ ] Configuration Integration
+- [ ] Configuration Dokumentation
 
 ---
   
