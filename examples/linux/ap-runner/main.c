@@ -7,6 +7,11 @@
 #include "ap_dispatcher.h"
 #include "result_string.h"
 
+static void ap_result_handler(ap_result_t result,void *context)
+{
+    (void)context;
+    printf("%s\n",ap_result_string(result));
+}
 
 int main(int argc, char **argv)
 {
@@ -16,6 +21,7 @@ int main(int argc, char **argv)
     printf(" Automation Platform - Core Test\n");
     printf("=========================================\n\n");
 
+    ap_result_register_handler(ap_result_handler,NULL);
     result = ap_core_init();
 
     if (result != AP_OK)

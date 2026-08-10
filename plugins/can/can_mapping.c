@@ -172,13 +172,6 @@ ap_result_t ap_can_mapping_rx(
         );
     }
 
-    fprintf(
-        stderr,
-        "CAN RX: frame id=0x%03X dlc=%u\n",
-        frame->can_id,
-        frame->dlc
-    );
-
     for (uint8_t i = 0;
          i < config->mapping_count;
          i++)
@@ -218,12 +211,6 @@ ap_result_t ap_can_mapping_rx(
             return result;
         }
 
-        fprintf(
-            stderr,
-            "CAN RX: object %u ready\n",
-            mapping->object_id
-        );
-
         ap_event_t event;
 
         ap_event_init(
@@ -250,9 +237,7 @@ ap_result_t ap_can_mapping_rx(
             continue;
         }
 
-        ap_dispatcher_publish(
-            &event
-        );
+        ap_result_report(ap_dispatcher_publish(&event));
     }
 
     return AP_OK;

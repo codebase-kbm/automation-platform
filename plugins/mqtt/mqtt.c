@@ -411,10 +411,10 @@ static ap_result_t ap_mqtt_plugin_load(
 /* Plugin init                                       */
 /* -------------------------------------------------- */
 
-static void ap_mqtt_event_handler(
+static ap_result_t ap_mqtt_event_handler(
     const ap_event_t *event)
 {
-    (void)ap_mqtt_publish_event(event);
+    return ap_mqtt_publish_event(event);
 }
 
 

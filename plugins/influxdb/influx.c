@@ -444,7 +444,7 @@ static int ap_influx_build_line(
 /* Event handler                                      */
 /* -------------------------------------------------- */
 
-static void ap_influx_event_handler(
+static ap_result_t ap_influx_event_handler(
     const ap_event_t *event)
 {
     char line[512];
@@ -452,11 +452,19 @@ static void ap_influx_event_handler(
     if (event == NULL ||
         event->object == NULL)
     {
-        return;
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_DISPATCHER,
+            AP_PLUGIN_INFLUX,
+            AP_ERROR_OPERATION_FAILED);
     }
 
     if (event->object->object_type != AP_OBJECT_SIGNAL)
-        return;
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_DISPATCHER,
+            AP_PLUGIN_INFLUX,
+            AP_ERROR_OPERATION_FAILED);
 
     const ap_influx_mapping_t *mapping =
         ap_influx_find_mapping(
@@ -464,7 +472,11 @@ static void ap_influx_event_handler(
         );
 
     if (mapping == NULL)
-        return;
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_DISPATCHER,
+            AP_PLUGIN_INFLUX,
+            AP_ERROR_OPERATION_FAILED);
 
     if (ap_influx_build_line(
             event,
@@ -472,7 +484,11 @@ static void ap_influx_event_handler(
             line,
             sizeof(line)) != 0)
     {
-        return;
+            return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_DISPATCHER,
+            AP_PLUGIN_INFLUX,
+            AP_ERROR_OPERATION_FAILED);
     }
 
     char url[1024];
@@ -491,7 +507,11 @@ static void ap_influx_event_handler(
     if (url_length < 0 ||
         (size_t)url_length >= sizeof(url))
     {
-        return;
+            return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_DISPATCHER,
+            AP_PLUGIN_INFLUX,
+            AP_ERROR_OPERATION_FAILED);
     }
 
     char authorization[1024];
@@ -507,7 +527,11 @@ static void ap_influx_event_handler(
     if (auth_length < 0 ||
         (size_t)auth_length >= sizeof(authorization))
     {
-        return;
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_DISPATCHER,
+            AP_PLUGIN_INFLUX,
+            AP_ERROR_OPERATION_FAILED);
     }
 
     const ap_http_header_t headers[] =
@@ -546,12 +570,19 @@ static void ap_influx_event_handler(
         );
 
     if (result != AP_OK)
-        return;
+            return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_PLUGIN,
+            AP_COMPONENT_DISPATCHER,
+            AP_PLUGIN_INFLUX,
+            AP_ERROR_OPERATION_FAILED
+        );
 
     ap_http_backend.response_free(
         influx_http_context,
         &response
     );
+
+    return AP_OK;
 }
 
 

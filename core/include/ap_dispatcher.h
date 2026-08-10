@@ -14,7 +14,7 @@ extern "C" {
  *
  * Every adapter registers one or more callbacks to receive events.
  */
-typedef void (*ap_event_handler_t)(const ap_event_t *event);
+typedef ap_result_t (*ap_event_handler_t)(const ap_event_t *event);
 
 /**
  * @brief Initialize the dispatcher.
@@ -36,7 +36,7 @@ ap_result_t ap_dispatcher_register(ap_event_handler_t handler);
  *
  * @param event Event to publish.
  */
-void ap_dispatcher_publish(const ap_event_t *event);
+ap_result_t ap_dispatcher_publish(const ap_event_t *event);
 uint16_t ap_dispatcher_get_EventCount(void);
 uint32_t ap_dispatcher_get_HandlerCount(void);
 

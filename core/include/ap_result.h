@@ -86,6 +86,11 @@ typedef enum
 
 } ap_component_type_t;
 
+// Core Result-API Handler
+typedef void (*ap_result_handler_t)(ap_result_t result,void *context);
+ap_result_t ap_result_register_handler(ap_result_handler_t handler,void *context);
+ap_result_t ap_result_report(ap_result_t result);
+
 #ifdef __cplusplus
 }
 #endif
