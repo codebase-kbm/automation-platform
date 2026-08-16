@@ -10,8 +10,8 @@
 extern "C" {
 #endif
 
+// Not implemented ??
 const char *ap_plugin_type_name(ap_plugin_type_t type);
-
 ap_plugin_type_t ap_plugin_type_from_name(const char *name);
 
 typedef enum

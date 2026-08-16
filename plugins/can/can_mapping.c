@@ -202,12 +202,6 @@ ap_result_t ap_can_mapping_rx(
 
         if (result != AP_OK)
         {
-            fprintf(
-                stderr,
-                "CAN RX: failed to get object %u\n",
-                mapping->object_id
-            );
-
             return result;
         }
 

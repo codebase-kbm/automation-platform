@@ -13,7 +13,7 @@ static const char *source_string(uint8_t source)
             return "PLUGIN";
 
         default:
-            return "UNKNOWN";
+            return "UNKNOWN SOURCE";
     }
 }
 
@@ -29,7 +29,7 @@ static const char *plugin_string(ap_plugin_type_t type)
 #undef X
 
         default:
-            return "UNKNOWN";
+            return "| UNKNOWN PLUGIN";
     }
 }
 
@@ -45,7 +45,7 @@ static const char *component_string(ap_component_type_t component)
 #undef X
 
         default:
-            return "UNKNOWN";
+            return "UNKNOWN COMPONENT";
     }
 }
 
@@ -61,7 +61,7 @@ static const char *error_string(ap_error_code_t error)
         #undef X
 
         default:
-            return "UNKNOWN";
+            return "UNKNOWN ERROR";
     }
 }
 

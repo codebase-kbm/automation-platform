@@ -39,6 +39,15 @@ typedef enum
 
 } ap_value_type_t;
 
+typedef struct
+{
+    uint8_t context[6];
+    uint8_t reserved;
+    uint8_t code;
+
+} ap_object_status_t;
+
+
 /**
  * @brief Object definition.
  *
@@ -59,7 +68,7 @@ typedef struct
     ap_value_type_t value_type;
 
     /** Current object status */
-    ap_result_t status;
+    ap_object_status_t status;
 
 } ap_object_t;
 

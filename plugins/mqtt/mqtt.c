@@ -180,27 +180,19 @@ static void ap_mqtt_message_callback(
         return;
     }
 
-    const ap_mqtt_mapping_t *mapping =
-        ap_mqtt_find_mapping_by_topic(
-            topic
-        );
+    const ap_mqtt_mapping_t *mapping = ap_mqtt_find_mapping_by_topic(topic);
 
     if (mapping == NULL)
         return;
 
-    if (!(mapping->flags &
-          AP_MQTT_MAP_FLAG_SUBSCRIBE))
+    if (!(mapping->flags & AP_MQTT_MAP_FLAG_SUBSCRIBE))
     {
         return;
     }
 
-    const ap_object_t *object =
-        ap_registry_get(
-            mapping->object_id
-        );
+    const ap_object_t *object = ap_registry_get(mapping->object_id);
 
-    if (object == NULL ||
-        object->object_type != AP_OBJECT_SIGNAL)
+    if (object == NULL || object->object_type != AP_OBJECT_SIGNAL)
     {
         return;
     }
@@ -278,9 +270,7 @@ static void ap_mqtt_message_callback(
             return;
     }
 
-    ap_dispatcher_publish(
-        &event
-    );
+    if(object->status.code == AP_OK) ap_dispatcher_publish(&event);
 }
 
 
@@ -388,7 +378,6 @@ static ap_result_t ap_mqtt_plugin_load(
             if (result != AP_OK)
             {
                 ap_mqtt_config_clear(&mqtt_config);
-
                 return result;
             }
         }
@@ -396,10 +385,7 @@ static ap_result_t ap_mqtt_plugin_load(
 
     if (reader.offset != reader.length)
     {
-        ap_mqtt_config_clear(
-            &mqtt_config
-        );
-
+        ap_mqtt_config_clear(&mqtt_config);
         return AP_RESULT_MAKE(AP_RESULT_SOURCE_PLUGIN,AP_COMPONENT_CONFIG_READER,AP_PLUGIN_MQTT,AP_ERROR_INVALID_ARGUMENT);
     }
 
@@ -411,31 +397,14 @@ static ap_result_t ap_mqtt_plugin_load(
 /* Plugin init                                       */
 /* -------------------------------------------------- */
 
-static ap_result_t ap_mqtt_event_handler(
-    const ap_event_t *event)
-{
-    return ap_mqtt_publish_event(event);
-}
-
-
 static ap_result_t ap_mqtt_plugin_init(void)
 {
     ap_mqtt_backend_config_t backend_config;
-
-    backend_config.host =
-        mqtt_config.host;
-
-    backend_config.port =
-        mqtt_config.port;
-
-    backend_config.user =
-        mqtt_config.user;
-
-    backend_config.password =
-        mqtt_config.password;
-
-    backend_config.client_id =
-        mqtt_config.client_id;
+    backend_config.host = mqtt_config.host;
+    backend_config.port = mqtt_config.port;
+    backend_config.user = mqtt_config.user;
+    backend_config.password = mqtt_config.password;
+    backend_config.client_id = mqtt_config.client_id;
 
     ap_result_t result =
         ap_mqtt_backend.open(
@@ -451,11 +420,9 @@ static ap_result_t ap_mqtt_plugin_init(void)
          i < mqtt_config.mapping_count;
          i++)
     {
-        const ap_mqtt_mapping_t *mapping =
-            &mqtt_config.mappings[i];
+        const ap_mqtt_mapping_t *mapping = &mqtt_config.mappings[i];
 
-        if (!(mapping->flags &
-              AP_MQTT_MAP_FLAG_SUBSCRIBE))
+        if (!(mapping->flags & AP_MQTT_MAP_FLAG_SUBSCRIBE))
         {
             continue;
         }
@@ -478,10 +445,7 @@ static ap_result_t ap_mqtt_plugin_init(void)
         }
     }
 
-    result =
-        ap_dispatcher_register(
-            ap_mqtt_event_handler
-        );
+    result = ap_dispatcher_register(ap_mqtt_publish_event);
 
     if (result != AP_OK)
     {
