@@ -21,9 +21,7 @@ typedef struct
     ap_object_id_t connection_object_id;
     ap_object_id_t object_ids[AP_PEER_MAX_OBJECTS_PER_CONNECTION];
     size_t object_count;
-    uint8_t rx_buffer[AP_PEER_MAX_FRAME_SIZE];
-    size_t rx_length;
-
+    ap_peer_decoder_t decoder;
 } ap_peer_connection_t;
 
 /**

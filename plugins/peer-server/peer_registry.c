@@ -69,6 +69,7 @@ ap_result_t ap_peer_registry_add(ap_peer_connection_t **connection)
             registry_connections[i].connection == NULL)
         {
             *connection = &registry_connections[i];
+            ap_peer_decoder_init(&registry_connections[i].decoder);
 
             return AP_OK;
         }
@@ -110,15 +111,13 @@ ap_result_t ap_peer_registry_remove(ap_peer_connection_t *connection)
 
     connection->connection = NULL;
     connection->object_count = 0;
-    connection->rx_length = 0;
 
     memset(
         connection->object_ids,
         0,
         sizeof(connection->object_ids)
     );
-
-    memset(connection->rx_buffer,0,sizeof(connection->rx_buffer));
+    ap_peer_decoder_init(&connection->decoder);
 
     return AP_OK;
 }

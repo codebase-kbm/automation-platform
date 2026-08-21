@@ -4,7 +4,6 @@
 CAN Payload Handling
 
 ## Status
-
 Accepted
 
 ## Decision

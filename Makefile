@@ -18,6 +18,7 @@ CONFIG_CORE_SRC := \
 	
 SRC_DIRS := \
     core/src \
+    peer-protocol/src \
     examples/linux/ap-runner \
     examples/linux/common \
     $(wildcard plugins/*) \
@@ -25,6 +26,7 @@ SRC_DIRS := \
 
 INC_DIRS := \
     core/include \
+    peer-protocol/include \
     examples/linux/common \
     adapters/api \
     $(wildcard plugins/*/) \
