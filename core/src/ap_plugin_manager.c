@@ -138,37 +138,18 @@ ap_result_t ap_plugin_manager_init(void)
          * Create the runtime object for this
          * configured plugin instance.
          */
-        ap_object_t *plugin_object =
-            calloc(1, sizeof(*plugin_object));
-
-        if (plugin_object == NULL)
-        {
-            return AP_RESULT_MAKE(
-                AP_RESULT_SOURCE_CORE,
-                AP_COMPONENT_PLUGIN_MANAGER,
-                AP_PLUGIN_NONE,
-                AP_ERROR_OUT_OF_MEMORY
-            );
-        }
-
-        plugin_object->id =
-            object.header.object_id;
-
-        plugin_object->object_type =
-            AP_OBJECT_PLUGIN;
-
-        plugin_object->value_type =
-            AP_VALUE_NONE;
-
-        plugin_object->status.code =
-            AP_ERROR_NONE;
+        const ap_object_t *plugin_object;
 
         ap_result_t result =
-            ap_registry_register(plugin_object);
+            ap_registry_create_object(
+                object.header.object_id,
+                AP_OBJECT_PLUGIN,
+                AP_VALUE_NONE,
+                &plugin_object
+            );
 
         if (result != AP_OK)
         {
-            free(plugin_object);
             return result;
         }
 

@@ -230,13 +230,13 @@ static int compile_node(
     );
 
     /*
-     * Node objects currently have
+     * Core Node objects currently have
      * no payload.
      */
     if (write_object(
             file,
             node_id,
-            AP_OBJECT_NODE,
+            AP_OBJECT_CORE,
             NULL,
             0) != 0)
     {

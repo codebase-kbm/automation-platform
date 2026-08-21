@@ -74,14 +74,20 @@
 - [ ] Configuration Dokumentation
 
 ### Peer Server Plugin
-- [ ] Peer Backend
-- [ ] Multi-Instance Handling
-- [ ] Signal Handling/Mapping
-- [ ] Configuration Integration
+- [x] TCP Backend
+- [x] Multi-Connection Handling
+- [x] Connection Objects
+- [x] Peer Registry
+- [x] Peer Protocol
+- [ ] Peer CONNECT / ACCEPT
+- [ ] Peer REGISTER / UNREGISTER
+- [ ] Peer EVENT → AP Dispatcher
+- [ ] AP Event → Peer Client
+- [x] Configuration Integration
 - [ ] Configuration Dokumentation
 
 ### Peer Client Plugin
-- [ ] Peer Backend
+- [x] TCP Backend
 - [ ] Multi-Instance Handling
 - [ ] Signal Handling/Mapping
 - [ ] Configuration Integration
@@ -120,9 +126,10 @@
   
 ## Platform / Runtime / Tools
 - [x] ARM Testport (continuous Test for Long-Time-Stability)
-- [ ] Peer Client Library (C-API)
-- [ ] Peer Client Library Wrappers
+- [ ] Peer Client Library "libap-peer" (C-API)
+- [ ] libap-peer Wrappers
 - [ ] Logger Monitoring Tool
+ - [ ] ap-monitor Minimal Client
 - [ ] Visual Configuration Tool
 - [ ] Embedded Port
 

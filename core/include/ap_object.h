@@ -19,9 +19,9 @@ typedef uint32_t ap_object_id_t;
 typedef enum
 {
     AP_OBJECT_SIGNAL,
-    AP_OBJECT_NODE,
-    AP_OBJECT_PLUGIN
-
+    AP_OBJECT_CORE,
+    AP_OBJECT_PLUGIN,
+    AP_OBJECT_CONNECTION
 } ap_object_type_t;
 
 /**

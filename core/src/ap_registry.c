@@ -45,6 +45,74 @@ void ap_registry_init(void)
 }
 
 /* -------------------------------------------------- */
+/* Create object                                      */
+/* -------------------------------------------------- */
+
+ap_result_t ap_registry_create_object(
+    ap_object_id_t id,
+    ap_object_type_t object_type,
+    ap_value_type_t value_type,
+    const ap_object_t **object)
+{
+    ap_object_t *created;
+    ap_result_t result;
+
+    if (object == NULL)
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            AP_PLUGIN_NONE,
+            AP_ERROR_INVALID_ARGUMENT
+        );
+    }
+
+    *object = NULL;
+
+    if (ap_registry_get(id) != NULL)
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            AP_PLUGIN_NONE,
+            AP_ERROR_ALREADY_EXISTS
+        );
+    }
+
+    created = calloc(
+        1,
+        sizeof(*created)
+    );
+
+    if (created == NULL)
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            AP_PLUGIN_NONE,
+            AP_ERROR_OUT_OF_MEMORY
+        );
+    }
+
+    created->id = id;
+    created->object_type = object_type;
+    created->value_type = value_type;
+    created->status.code = AP_ERROR_NONE;
+
+    result = ap_registry_register(created);
+
+    if (result != AP_OK)
+    {
+        free(created);
+        return result;
+    }
+
+    *object = created;
+
+    return AP_OK;
+}
+
+/* -------------------------------------------------- */
 /* Get object                                         */
 /* -------------------------------------------------- */
 
@@ -265,6 +333,87 @@ ap_result_t ap_registry_set_objectstatuscontext(
         object->status.context,
         context,
         size
+    );
+
+    return AP_OK;
+}
+
+ap_result_t ap_registry_get_objectstatus(
+    ap_object_id_t id,
+    ap_error_code_t *code)
+{
+    const ap_object_t *object;
+
+    if (code == NULL)
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            0,
+            AP_ERROR_INVALID_ARGUMENT
+        );
+    }
+
+    object = ap_registry_get(id);
+
+    if (object == NULL)
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            0,
+            AP_ERROR_NOT_FOUND
+        );
+    }
+
+    *code = (ap_error_code_t)object->status.code;
+
+    return AP_OK;
+}
+
+ap_result_t ap_registry_get_objectstatuscontext(
+    ap_object_id_t id,
+    uint8_t *context,
+    uint8_t size)
+{
+    const ap_object_t *object;
+
+    if (context == NULL)
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            0,
+            AP_ERROR_INVALID_ARGUMENT
+        );
+    }
+
+    if (size < sizeof(object->status.context))
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            0,
+            AP_ERROR_INVALID_SIZE
+        );
+    }
+
+    object = ap_registry_get(id);
+
+    if (object == NULL)
+    {
+        return AP_RESULT_MAKE(
+            AP_RESULT_SOURCE_CORE,
+            AP_COMPONENT_REGISTRY,
+            0,
+            AP_ERROR_NOT_FOUND
+        );
+    }
+
+    memcpy(
+        context,
+        object->status.context,
+        sizeof(object->status.context)
     );
 
     return AP_OK;

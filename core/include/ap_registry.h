@@ -22,6 +22,24 @@ void ap_registry_init(void);
 ap_result_t ap_registry_register(const ap_object_t *object);
 
 /**
+ * @brief Create and register an object.
+ *
+ * The object must not already exist.
+ *
+ * @param id          Object identifier.
+ * @param object_type Object type.
+ * @param value_type  Object value type.
+ * @param object      Receives a pointer to the registered object.
+ *
+ * @return AP_OK on success or an appropriate error code.
+ */
+ap_result_t ap_registry_create_object(
+    ap_object_id_t id,
+    ap_object_type_t object_type,
+    ap_value_type_t value_type,
+    const ap_object_t **object);
+
+/**
  * @brief Get an object by its ID.
  *
  * @param id Object identifier.
