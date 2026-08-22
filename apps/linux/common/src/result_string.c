@@ -24,7 +24,7 @@ static const char *plugin_string(ap_plugin_type_t type)
 #define X(name, string) \
         case name: return string;
 
-#include "../../../core/defs/ap_plugin_types.def"
+#include "ap_plugin_types.def"
 
 #undef X
 
@@ -40,7 +40,7 @@ static const char *component_string(ap_component_type_t component)
 #define X(name, string) \
         case name: return string;
 
-#include "../../../core/defs/ap_components.def"
+#include "ap_components.def"
 
 #undef X
 
@@ -56,7 +56,7 @@ static const char *error_string(ap_error_code_t error)
         #define X(name, string) \
                 case name: return string;
 
-        #include "../../../core/defs/ap_result_errors.def"
+        #include "ap_result_errors.def"
 
         #undef X
 
